@@ -1,0 +1,30 @@
+extends layout
+
+block content
+	.section-header
+		p.section-label PANEL DE CLIENTES
+		h2.section-title Crear nuevo cliente
+		p.section-description
+			| Completá los datos para registrar un nuevo cliente.
+
+	form.formulario-evento(action="/clientes" method="POST")
+		.campo
+			label(for="nombre") Nombre
+			input#nombre(type="text" name="nombre" required)
+
+		.campo
+			label(for="apellido") Apellido
+			input#apellido(type="text" name="apellido" required)
+
+		.campo
+			label(for="email") Email
+			input#email(type="email" name="email" required)
+
+		.campo
+			label(for="telefono") Teléfono
+			//input#telefono(type="tel" name="telefono" required)
+			input#telefono(type="tel" name="telefono" pattern="[0-9]+" title="Ingrese únicamente números" required)
+
+		.formulario-evento__acciones
+			a.boton.boton--secundario(href="/clientes/vista") Cancelar
+			button.boton(type="submit") Guardar cliente

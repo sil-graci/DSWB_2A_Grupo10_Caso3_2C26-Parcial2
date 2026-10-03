@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "titulo": "Antígona, una furia",
+    "descripcion": "Versión libre de la tragedia griega, dirigida por el elenco estable.",
+    "fecha": "2026-09-12",
+    "hora": "20:30",
+    "salaId": 1,
+    "estado": "finalizado"
+  },
+  {
+    "id": 2,
+    "titulo": "Noche de jazz independiente",
+    "descripcion": "Trío local presenta su nuevo repertorio instrumental.",
+    "fecha": "2026-09-15",
+    "hora": "21:00",
+    "salaId": 2,
+    "estado": "finalizado"
+  },
+  {
+    "id": 3,
+    "titulo": "Feria de arte comunitario",
+    "descripcion": "Muestra abierta de artistas del barrio, entrada libre y gratuita.",
+    "fecha": "2026-08-10",
+    "hora": "17:00",
+    "salaId": 3,
+    "estado": "finalizado"
+  },
+  {
+    "id": 4,
+    "titulo": "Ciclo de cine independiente",
+    "descripcion": "Proyección de películas de realizadores emergentes y charla abierta con el público.",
+    "fecha": "2026-09-18",
+    "hora": "19:30",
+    "salaId": 1,
+    "estado": "finalizado"
+  },
+  {
+    "id": 5,
+    "titulo": "Taller de fotografía urbana",
+    "descripcion": "Taller práctico sobre composición, iluminación y fotografía en espacios urbanos.",
+    "fecha": "2026-09-25",
+    "hora": "16:00",
+    "salaId": 1,
+    "estado": "finalizado"
+  },
+  {
+    "id": 6,
+    "titulo": "Concierto de música latinoamericana",
+    "descripcion": "Presentación en vivo de músicos locales con un repertorio de canciones tradicionales y contemporáneas.",
+    "fecha": "2026-10-03",
+    "hora": "20:00",
+    "salaId": 1,
+    "estado": "activo"
+  }
+]

@@ -1,0 +1,43 @@
+extends layout
+
+block content
+  .section-header
+    p.section-label PANEL DE EVENTOS
+    h2.section-title Crear nuevo evento
+    p.section-description
+      | Completá los datos para registrar un nuevo evento.
+
+  form.formulario-evento(action="/eventos" method="POST")
+    .campo
+      label(for="titulo") Título
+      input#titulo(type="text" name="titulo" required)
+
+    .campo
+      label(for="descripcion") Descripción
+      textarea#descripcion(name="descripcion" rows="4" required)
+
+    .campo
+      label(for="fecha") Fecha
+      input#fecha(type="date" name="fecha" required)
+
+    .campo
+      label(for="hora") Hora
+      input#hora(type="time" name="hora" required)
+
+    .campo
+      label(for="salaId") Sala
+      select#salaId(name="salaId" required)
+        option(value="" disabled selected) Seleccioná una sala
+        each sala in salas
+          option(value=sala.id)= sala.nombre
+
+    .campo
+      label(for="estado") Estado
+      select#estado(name="estado" required)
+        option(value="activo" selected) Activo
+        option(value="lleno") Lleno
+        option(value="finalizado") Finalizado
+
+    .formulario-evento__acciones
+      a.boton.boton--secundario(href="/eventos/vista") Cancelar
+      button.boton(type="submit") Guardar evento

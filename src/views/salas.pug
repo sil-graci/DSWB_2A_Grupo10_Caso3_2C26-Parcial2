@@ -1,0 +1,31 @@
+extends layout
+
+block content
+  .section-header.section-header--acciones
+    p.section-label PANEL DE SALAS
+    h2.section-title Salas disponibles
+    p.section-description
+      | Consultá las salas registradas y su capacidad.
+    a.boton.boton--nuevo(href="/salas/nuevo") + Nueva Sala
+
+  if mensaje
+    p.mensaje-exito = mensaje
+
+  .eventos-grid
+    each sala in salas
+      article.evento-card
+        .evento-card__header
+          span.evento-card__estado Sala
+          span.evento-card__codigo= `#SA${sala.id}`
+
+        .evento-card__body
+          h3.evento-card__titulo= sala.nombre
+
+          .evento-card__datos
+            .dato
+              span.dato__label ID
+              span.dato__valor= sala.id
+
+            .dato
+              span.dato__label Capacidad
+              span.dato__valor= `${sala.capacidad} personas`

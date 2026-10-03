@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "nombre": "Carlos",
+    "apellido": "Lopez",
+    "email": "carlos@test.com",
+    "telefono": "1128456123"
+  },
+  {
+    "id": 2,
+    "nombre": "María Ordoñes",
+    "apellido": "González Irrutia",
+    "email": "maria@test.com",
+    "telefono": "1131789654"
+  },
+  {
+    "id": 3,
+    "nombre": "Pedro",
+    "apellido": "Sánchez",
+    "email": "pedro@test.com",
+    "telefono": "1145678901"
+  },
+  {
+    "id": 4,
+    "nombre": "Rubén",
+    "apellido": "Sarco",
+    "email": "rubenw@test.com",
+    "telefono": "1129876432"
+  },
+  {
+    "id": 5,
+    "nombre": "Roxana",
+    "apellido": "Sáenz",
+    "email": "rsaenz@test.com",
+    "telefono": "1156648756"
+  },
+  {
+    "id": 6,
+    "nombre": "Mario",
+    "apellido": "Hernandez",
+    "email": "marioh@test.com",
+    "telefono": "45445813"
+  }
+]

@@ -1,0 +1,30 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Urbana Cult
+    link(rel="stylesheet", href="/styles.css")
+
+  body
+    header.topbar
+      .marca
+        .logo UC
+        div
+          h1 Urbana Cult
+          p Gestión de eventos culturales
+
+      nav.menu
+        a(class=currentPath === "/" ? "activo" : "" href="/") Inicio
+        a(class=currentPath.startsWith("/eventos") ? "activo" : "" href="/eventos/vista") Eventos
+        a(class=currentPath.startsWith("/entradas") ? "activo" : "" href="/entradas/nueva") Entradas
+        a(class=currentPath.startsWith("/reservas") ? "activo" : "" href="/reservas/vista") Reservas
+        a(class=currentPath.startsWith("/clientes") ? "activo" : "" href="/clientes/vista") Clientes
+        a(class=currentPath.startsWith("/salas") ? "activo" : "" href="/salas/vista") Salas
+
+    main.contenedor
+      block content
+
+    footer.footer
+      p &copy; 2026 Urbana Cult
+      p Gestión de eventos culturales

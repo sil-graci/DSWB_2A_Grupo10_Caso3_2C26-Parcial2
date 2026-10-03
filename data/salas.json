@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "nombre": "Sala Principal",
+    "capacidad": 100
+  },
+    {
+    "id": 2,
+    "nombre": "Sala Magna",
+    "capacidad": 150
+  },
+  {
+    "id": 3,
+    "nombre": "Sala Secundaria",
+    "capacidad": 50
+  }
+]

@@ -1,0 +1,21 @@
+extends layout
+
+block content
+	.section-header
+		p.section-label PANEL DE SALAS
+		h2.section-title Crear nueva sala
+		p.section-description
+			| Completá los datos para registrar una nueva sala.
+
+	form.formulario-evento(action="/salas" method="POST")
+		.campo
+			label(for="nombre") Nombre
+			input#nombre(type="text" name="nombre" required)
+
+		.campo
+			label(for="capacidad") Capacidad
+			input#capacidad(type="number" name="capacidad" min="1" required)
+
+		.formulario-evento__acciones
+			a.boton.boton--secundario(href="/salas/vista") Cancelar
+			button.boton(type="submit") Guardar sala

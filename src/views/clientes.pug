@@ -1,0 +1,35 @@
+extends layout
+
+block content
+  .section-header.section-header--acciones
+    p.section-label PANEL DE CLIENTES
+    h2.section-title Clientes registrados
+    p.section-description
+      | Consultá la información de los clientes registrados.
+    a.boton.boton--nuevo(href="/clientes/nuevo") + Nuevo Cliente
+
+  if mensaje
+    p.mensaje-exito= mensaje
+
+  .eventos-grid
+    each cliente in clientes
+      article.evento-card
+        .evento-card__header
+          span.evento-card__estado Cliente
+          span.evento-card__codigo= `#CL${cliente.id}`
+
+        .evento-card__body
+          h3.evento-card__titulo= `${cliente.nombre} ${cliente.apellido}`
+          
+          .evento-card__datos
+            .dato
+              span.dato__label ID
+              span.dato__valor= cliente.id
+
+            .dato
+              span.dato__label Email
+              span.dato__valor= cliente.email
+
+            .dato
+              span.dato__label Teléfono
+              span.dato__valor= cliente.telefono

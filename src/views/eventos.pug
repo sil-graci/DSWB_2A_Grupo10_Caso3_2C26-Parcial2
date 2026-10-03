@@ -1,0 +1,38 @@
+extends layout
+
+block content
+  .section-header.section-header--acciones
+    p.section-label PANEL DE EVENTOS
+    h2.section-title Eventos disponibles
+    p.section-description
+      | Consultá los eventos disponibles y la información de cada uno.
+    a.boton.boton--nuevo(href="/eventos/nuevo") + Crear nuevo evento
+
+  if mensaje
+    p.mensaje-exito= mensaje
+    script.
+      history.replaceState(null, "", "/eventos/vista")
+
+  .eventos-grid
+    each evento in eventos
+      article.evento-card
+        .evento-card__header
+          span.evento-card__estado= evento.estado
+          span.evento-card__codigo= `#EV${evento.id}`
+
+        .evento-card__body
+          h3.evento-card__titulo= evento.titulo
+          p.evento-card__descripcion= evento.descripcion
+
+          .evento-card__datos
+            .dato
+              span.dato__label Fecha
+              span.dato__valor= evento.fecha
+
+            .dato
+              span.dato__label Hora
+              span.dato__valor= evento.hora
+
+            .dato
+              span.dato__label Sala
+              span.dato__valor= evento.salaId
