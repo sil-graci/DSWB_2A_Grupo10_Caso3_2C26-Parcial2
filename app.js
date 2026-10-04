@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import path from "path";
+import conectarDB from "./src/config/db.js"; // Importar la función de conexión a la base de datos
 
 import eventoRoutes from "./src/routes/eventos.routes.js";
 import clienteRoutes from "./src/routes/clientes.routes.js";
@@ -45,6 +46,15 @@ app.use((req, res) => {
 });
 
 
-app.listen(PORT, () => {
-    console.log(`Servidor escuchando en el puerto ${PORT}`);
-});
+
+// Función para iniciar el servidor después de conectar a la base de datos
+const iniciarServidor = async () => {
+  await conectarDB();
+  
+  app.listen(PORT, () => {
+      console.log(`Servidor escuchando en puerto ${PORT}`);
+  });
+  
+};
+
+iniciarServidor();
