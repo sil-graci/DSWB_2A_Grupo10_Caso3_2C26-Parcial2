@@ -28,9 +28,8 @@ app.use((req, res, next) => {
 
 
 app.get("/", (req, res) => {
-    res.send("Urbana Cult");
+  res.render("inicio");
 });
-
 
 // Rutas
 app.use("/eventos", eventoRoutes);
@@ -45,7 +44,7 @@ app.use((req, res) => {
   });
 });
 
-
+console.log("Archivo ejecutado:", fileURLToPath(import.meta.url));
 
 // Función para iniciar el servidor después de conectar a la base de datos
 const iniciarServidor = async () => {

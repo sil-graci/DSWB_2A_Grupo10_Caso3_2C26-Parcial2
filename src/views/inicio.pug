@@ -1,0 +1,151 @@
+extends layout
+
+block content
+  .inicio
+    header.portada-header
+      a.portada-marca(href="/")
+        span URBANA
+        span CULT
+
+      //- Ajustar esta ruta cuando Judith integre el login
+      a.inicio-boton(href="/login") Ingresar
+
+    section.inicio-hero
+      .inicio-hero__contenido
+        h2 Cultura urbana,
+          br
+          | espacios para todos.
+
+        button.inicio-boton#mostrar-cartelera(
+          type="button"
+          aria-controls="cartelera"
+          aria-expanded="false"
+        ) Conocé más
+
+    //- Cartelera de ejemplo, pendiente de conectar con MongoDB
+    section.cartelera#cartelera(hidden)
+      .cartelera-encabezado
+        div
+          p Próximos encuentros
+          h2 Descubrí nuestra programación
+
+      .cartelera-marco
+        button.cartelera-flecha.cartelera-flecha--izquierda(
+          type="button"
+          data-direccion="-1"
+          aria-label="Ver espectáculos anteriores"
+          aria-controls="lista-espectaculos"
+        ) ❮
+
+        .cartelera-lista#lista-espectaculos(
+          tabindex="0"
+          role="region"
+          aria-label="Espectáculos"
+        )
+          article.espectaculo
+            img(
+              src="/concierto.png"
+              alt="Banda tocando en vivo en un centro cultural"
+              onerror="this.onerror=null;this.src='/portada.png'"
+            )
+
+            .espectaculo-contenido
+              span.espectaculo-tipo Música
+              h3 Concierto en vivo
+              p Una noche para disfrutar de la música.
+
+              details.espectaculo-detalles
+                summary Ver más
+                p Aquí mostraremos la fecha, el horario y la sala del evento.
+
+          article.espectaculo
+            img(
+              src="/teatro.jpg"
+              alt="Actores interpretando una obra de teatro"
+              onerror="this.onerror=null;this.src='/portada.png'"
+            )
+
+            .espectaculo-contenido
+              span.espectaculo-tipo Teatro
+              h3 Teatro en Urbana Cult
+              p Historias que cobran vida sobre el escenario.
+
+              details.espectaculo-detalles
+                summary Ver más
+                p Aquí mostraremos la fecha, el horario y la sala del evento.
+
+          article.espectaculo
+            img(
+              src="/exposicion.jpg"
+              alt="Visitantes recorriendo una exposición de arte"
+              onerror="this.onerror=null;this.src='/portada.png'"
+            )
+
+            .espectaculo-contenido
+              span.espectaculo-tipo Arte
+              h3 Exposición de arte
+              p Descubrí nuevas miradas y artistas.
+
+              details.espectaculo-detalles
+                summary Ver más
+                p Aquí mostraremos la fecha, el horario y la sala del evento.
+
+        button.cartelera-flecha.cartelera-flecha--derecha(
+          type="button"
+          data-direccion="1"
+          aria-label="Ver siguientes espectáculos"
+          aria-controls="lista-espectaculos"
+        ) ❯
+
+    script.
+      (() => {
+        const botonMostrar = document.querySelector("#mostrar-cartelera");
+        const cartelera = document.querySelector("#cartelera");
+        const lista = document.querySelector("#lista-espectaculos");
+        const flechas = document.querySelectorAll(".cartelera-flecha");
+
+        const reducirMovimiento = window.matchMedia(
+          "(prefers-reduced-motion: reduce)"
+        );
+
+        botonMostrar.addEventListener("click", () => {
+          cartelera.hidden = false;
+          botonMostrar.setAttribute("aria-expanded", "true");
+
+          cartelera.scrollIntoView({
+            behavior: reducirMovimiento.matches ? "auto" : "smooth",
+            block: "start"
+          });
+        });
+
+        flechas.forEach((flecha) => {
+          flecha.addEventListener("click", () => {
+            const tarjeta = lista.querySelector(".espectaculo");
+
+            if (!tarjeta) return;
+
+            const separacion = parseFloat(
+              getComputedStyle(lista).gap
+            ) || 0;
+
+            const distancia =
+              tarjeta.getBoundingClientRect().width + separacion;
+
+            const direccion = Number(flecha.dataset.direccion);
+            const limite = lista.scrollWidth - lista.clientWidth;
+
+            let destino = lista.scrollLeft + direccion * distancia;
+
+            if (direccion === 1 && lista.scrollLeft >= limite - 2) {
+              destino = 0;
+            } else if (direccion === -1 && lista.scrollLeft <= 2) {
+              destino = limite;
+            }
+
+            lista.scrollTo({
+              left: destino,
+              behavior: reducirMovimiento.matches ? "auto" : "smooth"
+            });
+          });
+        });
+      })();
