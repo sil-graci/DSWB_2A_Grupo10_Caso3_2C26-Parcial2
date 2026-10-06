@@ -41,28 +41,6 @@ const obtenerEventos = async (req, res) => {
   }
 };
 
-// GET eventos próximos (consulta de negocio)
-const obtenerEventosProximos = async (req, res) => {
-  try {
-    await actualizarEstados();
-    const eventos = await Evento.find();
-
-    const ahora = new Date();
-
-    const proximos = eventos
-      .filter((e) => new Date(`${e.fecha}T${e.hora}`) > ahora)
-      .sort(
-        (a, b) =>
-          new Date(`${a.fecha}T${a.hora}`) - new Date(`${b.fecha}T${b.hora}`),
-      );
-
-    res.json(proximos);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ mensaje: "Error al obtener los eventos próximos" });
-  }
-};
-
 // GET BY ID (API)
 const obtenerEventoPorId = async (req, res) => {
   try {
@@ -87,6 +65,28 @@ const obtenerEventoPorId = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ mensaje: "Error al obtener el evento" });
+  }
+};
+
+// GET eventos próximos (consulta de negocio)
+const obtenerEventosProximos = async (req, res) => {
+  try {
+    await actualizarEstados();
+    const eventos = await Evento.find();
+
+    const ahora = new Date();
+
+    const proximos = eventos
+      .filter((e) => new Date(`${e.fecha}T${e.hora}`) > ahora)
+      .sort(
+        (a, b) =>
+          new Date(`${a.fecha}T${a.hora}`) - new Date(`${b.fecha}T${b.hora}`),
+      );
+
+    res.json(proximos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al obtener los eventos próximos" });
   }
 };
 
