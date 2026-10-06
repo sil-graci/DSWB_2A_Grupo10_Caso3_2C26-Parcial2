@@ -23,7 +23,7 @@ block content
 		.campo
 			label(for="telefono") Teléfono
 			//input#telefono(type="tel" name="telefono" required)
-			input#telefono(type="tel" name="telefono" pattern="[0-9]+" title="Ingrese únicamente números" required)
+			input#telefono(type="tel" name="telefono" pattern="[0-9]+" maxlength="15" title="Ingrese únicamente números" required)
 
 		.formulario-evento__acciones
 			a.boton.boton--secundario(href="/clientes/vista") Cancelar

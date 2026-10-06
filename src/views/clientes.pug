@@ -10,13 +10,15 @@ block content
 
   if mensaje
     p.mensaje-exito= mensaje
+    script.
+      history.replaceState(null, "", "/clientes/vista")
 
   .eventos-grid
     each cliente in clientes
       article.evento-card
         .evento-card__header
           span.evento-card__estado Cliente
-          span.evento-card__codigo= `#CL${cliente.id}`
+          span.evento-card__codigo= `#CL${cliente._id}`
 
         .evento-card__body
           h3.evento-card__titulo= `${cliente.nombre} ${cliente.apellido}`
@@ -24,7 +26,7 @@ block content
           .evento-card__datos
             .dato
               span.dato__label ID
-              span.dato__valor= cliente.id
+              span.dato__valor= cliente._id
 
             .dato
               span.dato__label Email
