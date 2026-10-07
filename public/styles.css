@@ -30,6 +30,22 @@ body {
   background-color: var(--fondo);
 }
 
+/* Fondo cultural: eventos, salas, clientes y pantallas internas */
+body:not(:has(.inicio)) {
+  background-color: #f2b6a0;
+  background-image:
+    linear-gradient(
+      135deg,
+      rgba(255, 205, 175, 0.72),
+      rgba(240, 175, 190, 0.72)
+    ),
+    url("/fondo-menu.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
 /* Encabezado del sistema */
 .topbar {
   display: flex;
@@ -39,6 +55,10 @@ body {
   padding: 16px 7%;
   color: var(--blanco);
   background-color: var(--primario-oscuro);
+}
+
+body:not(:has(.inicio)) .topbar {
+  background-color: rgba(64, 36, 53, 0.95);
 }
 
 .marca {
@@ -130,6 +150,19 @@ body {
   color: var(--texto-suave);
 }
 
+/* Colores de los títulos sobre la foto */
+body:not(:has(.inicio)) .section-title {
+  color: #402435;
+}
+
+body:not(:has(.inicio)) .section-label {
+  color: #77394d;
+}
+
+body:not(:has(.inicio)) .section-description {
+  color: #593747;
+}
+
 /* Tarjetas de eventos y clientes */
 .eventos-grid {
   display: grid;
@@ -149,6 +182,12 @@ body {
 .evento-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 9px 20px rgba(0, 0, 0, 0.12);
+}
+
+body:not(:has(.inicio)) .evento-card,
+body:not(:has(.inicio)) .formulario-evento {
+  color: var(--texto);
+  background-color: rgba(255, 255, 255, 0.97);
 }
 
 .mensaje-exito {
@@ -325,6 +364,10 @@ body {
   margin: 0;
 }
 
+body:not(:has(.inicio)) .footer {
+  background-color: rgba(64, 36, 53, 0.95);
+}
+
 /* Portada */
 body:has(.inicio) > .topbar {
   display: none;
@@ -356,7 +399,7 @@ body:has(.inicio) > .topbar {
   text-decoration: none;
 }
 
-/* Foto principal */
+/* Foto principal de la portada */
 .inicio-hero {
   display: flex;
   align-items: flex-end;
@@ -366,7 +409,6 @@ body:has(.inicio) > .topbar {
   color: white;
   text-align: center;
   background-color: #25202b;
-
   background-image:
     linear-gradient(
       to top,
@@ -374,7 +416,6 @@ body:has(.inicio) > .topbar {
       rgba(0, 0, 0, 0.1)
     ),
     url("/portada.png");
-
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -434,7 +475,6 @@ body:has(.inicio) > .topbar {
   padding: 60px max(24px, calc((100% - 1152px) / 2));
   color: white;
   background-color: #111;
-
   background-image:
     linear-gradient(
       to bottom,
@@ -442,7 +482,6 @@ body:has(.inicio) > .topbar {
       rgba(0, 0, 0, 0.92)
     ),
     url("/portada.png");
-
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
@@ -488,7 +527,7 @@ body:has(.inicio) > .topbar {
   scrollbar-color: #a78bfa #222;
 }
 
-/* Tarjetas: dos visibles en computadora */
+/* Dos tarjetas visibles en computadora */
 .espectaculo {
   flex: 0 0 calc((100% - 24px) / 2);
   min-width: 0;
@@ -587,6 +626,10 @@ body:has(.inicio) > .topbar {
 
 /* Celulares */
 @media (max-width: 650px) {
+  body:not(:has(.inicio)) {
+    background-attachment: scroll;
+  }
+
   .topbar,
   .footer {
     align-items: flex-start;
