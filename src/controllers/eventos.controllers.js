@@ -1,18 +1,6 @@
-import fs from "fs";
-import path from "path";
 import mongoose from "mongoose";
 import Evento from "../models/Evento.js";
-import { fileURLToPath } from "url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// Las salas siguen en JSON hasta que el módulo Salas pase a Mongo
-const rutaSalas = path.join(__dirname, "../../data/salas.json");
-
-const leerSalas = () => {
-  const data = fs.readFileSync(rutaSalas, "utf-8");
-  return JSON.parse(data);
-};
+import Salas from "../models/Salas.js";
 
 const estadosValidos = ["activo", "lleno", "finalizado"];
 
@@ -93,8 +81,6 @@ const obtenerEventosProximos = async (req, res) => {
 // CREATE
 const crearEvento = async (req, res) => {
   try {
-    const salas = leerSalas();
-
     const { titulo, descripcion, fecha, hora, salaId, estado } = req.body ?? {};
 
     // Validar datos obligatorios
@@ -104,11 +90,15 @@ const crearEvento = async (req, res) => {
       });
     }
 
-    // Convertir salaId a número
-    const idSala = Number(salaId);
+    // Validar el formato del ID de la sala
+    if (!mongoose.isValidObjectId(salaId)) {
+      return res.status(400).json({
+        mensaje: "El ID de la sala no es válido",
+      });
+    }
 
-    // Validar que la sala exista
-    const sala = salas.find((s) => s.id === idSala);
+    // Validar que la sala exista en la colección de salas
+    const sala = await Salas.findById(salaId);
 
     if (!sala) {
       return res.status(404).json({
@@ -123,7 +113,7 @@ const crearEvento = async (req, res) => {
     }
 
     // Validar que no haya otro evento en la misma sala, fecha y hora
-    const conflicto = await Evento.findOne({ salaId: idSala, fecha, hora });
+    const conflicto = await Evento.findOne({ salaId, fecha, hora });
 
     if (conflicto) {
       return res.status(400).json({
@@ -136,7 +126,7 @@ const crearEvento = async (req, res) => {
       descripcion,
       fecha,
       hora,
-      salaId: idSala,
+      salaId,
       estado,
     });
 
@@ -205,8 +195,13 @@ const actualizarEvento = async (req, res) => {
 
     // Validar que la sala exista
     if (salaId !== undefined) {
-      const salas = leerSalas();
-      const sala = salas.find((s) => s.id === Number(salaId));
+      if (!mongoose.isValidObjectId(salaId)) {
+        return res.status(400).json({
+          mensaje: "El ID de la sala no es válido",
+        });
+      }
+
+      const sala = await Salas.findById(salaId);
 
       if (!sala) {
         return res.status(404).json({
@@ -223,7 +218,7 @@ const actualizarEvento = async (req, res) => {
     }
 
     // Validar que no exista otro evento con la misma sala, fecha y hora
-    const nuevaSalaId = salaId !== undefined ? Number(salaId) : evento.salaId;
+    const nuevaSalaId = salaId ?? evento.salaId;
     const nuevaFecha = fecha ?? evento.fecha;
     const nuevaHora = hora ?? evento.hora;
 
@@ -293,18 +288,26 @@ const mostrarEventosVista = async (req, res) => {
   try {
     await actualizarEstados();
     const eventos = await Evento.find();
+
+    // Nombres de las salas, para mostrarlos en lugar del ID
+    const salas = await Salas.find();
+    const nombresSalas = {};
+    salas.forEach((sala) => {
+      nombresSalas[String(sala._id)] = sala.nombre;
+    });
+
     const mensaje =
       req.query.creado === "1" ? "Evento creado exitosamente." : null;
-    res.render("eventos", { eventos, mensaje });
+    res.render("eventos", { eventos, nombresSalas, mensaje });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error al cargar los eventos");
   }
 };
 
-const mostrarNuevoEventoVista = (req, res) => {
+const mostrarNuevoEventoVista = async (req, res) => {
   try {
-    const salas = leerSalas();
+    const salas = await Salas.find();
     res.render("nuevo_evento", { salas });
   } catch (error) {
     console.error(error);

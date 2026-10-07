@@ -21,7 +21,8 @@ const eventoSchema = new mongoose.Schema(
       required: true,
     },
     salaId: {
-      type: Number,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Sala",
       required: true,
     },
     estado: {
