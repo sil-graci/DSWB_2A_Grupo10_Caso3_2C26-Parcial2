@@ -4,7 +4,7 @@ import Salas from "../models/Salas.js";
 
 const estadosValidos = ["activo", "lleno", "finalizado"];
 
-// Actualizar automáticamente el estado de los eventos según fecha y hora
+// Actualizar automáticamente los eventos cuya fecha y hora ya pasaron
 const actualizarEstados = async () => {
   const ahora = new Date();
   const activos = await Evento.find({ estado: "activo" });
@@ -21,11 +21,14 @@ const actualizarEstados = async () => {
 const obtenerEventos = async (req, res) => {
   try {
     await actualizarEstados();
+
     const eventos = await Evento.find();
     res.json(eventos);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ mensaje: "Error al obtener los eventos" });
+    res.status(500).json({
+      mensaje: "Error al obtener los eventos",
+    });
   }
 };
 
@@ -41,6 +44,7 @@ const obtenerEventoPorId = async (req, res) => {
     }
 
     await actualizarEstados();
+
     const evento = await Evento.findById(id);
 
     if (!evento) {
@@ -52,52 +56,71 @@ const obtenerEventoPorId = async (req, res) => {
     res.json(evento);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ mensaje: "Error al obtener el evento" });
+    res.status(500).json({
+      mensaje: "Error al obtener el evento",
+    });
   }
 };
 
-// GET eventos próximos (consulta de negocio)
+// GET eventos próximos
 const obtenerEventosProximos = async (req, res) => {
   try {
     await actualizarEstados();
-    const eventos = await Evento.find();
 
+    const eventos = await Evento.find();
     const ahora = new Date();
 
     const proximos = eventos
-      .filter((e) => new Date(`${e.fecha}T${e.hora}`) > ahora)
-      .sort(
-        (a, b) =>
-          new Date(`${a.fecha}T${a.hora}`) - new Date(`${b.fecha}T${b.hora}`),
-      );
+      .filter((evento) => {
+        return new Date(`${evento.fecha}T${evento.hora}`) > ahora;
+      })
+      .sort((a, b) => {
+        return (
+          new Date(`${a.fecha}T${a.hora}`) -
+          new Date(`${b.fecha}T${b.hora}`)
+        );
+      });
 
     res.json(proximos);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ mensaje: "Error al obtener los eventos próximos" });
+    res.status(500).json({
+      mensaje: "Error al obtener los eventos próximos",
+    });
   }
 };
 
 // CREATE
 const crearEvento = async (req, res) => {
   try {
-    const { titulo, descripcion, fecha, hora, salaId, estado } = req.body ?? {};
+    const {
+      titulo,
+      descripcion,
+      imagen,
+      fecha,
+      hora,
+      salaId,
+      estado,
+    } = req.body ?? {};
 
-    // Validar datos obligatorios
     if (!titulo || !descripcion || !fecha || !hora || !salaId || !estado) {
       return res.status(400).json({
         mensaje: "Faltan datos obligatorios",
       });
     }
 
-    // Validar el formato del ID de la sala
+    if (imagen !== undefined && typeof imagen !== "string") {
+      return res.status(400).json({
+        mensaje: "La imagen debe ser una ruta de texto",
+      });
+    }
+
     if (!mongoose.isValidObjectId(salaId)) {
       return res.status(400).json({
         mensaje: "El ID de la sala no es válido",
       });
     }
 
-    // Validar que la sala exista en la colección de salas
     const sala = await Salas.findById(salaId);
 
     if (!sala) {
@@ -112,8 +135,11 @@ const crearEvento = async (req, res) => {
       });
     }
 
-    // Validar que no haya otro evento en la misma sala, fecha y hora
-    const conflicto = await Evento.findOne({ salaId, fecha, hora });
+    const conflicto = await Evento.findOne({
+      salaId,
+      fecha,
+      hora,
+    });
 
     if (conflicto) {
       return res.status(400).json({
@@ -124,6 +150,7 @@ const crearEvento = async (req, res) => {
     const nuevoEvento = await Evento.create({
       titulo,
       descripcion,
+      imagen: imagen?.trim() || "/portada.png",
       fecha,
       hora,
       salaId,
@@ -140,7 +167,9 @@ const crearEvento = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ mensaje: "Error al crear el evento" });
+    res.status(500).json({
+      mensaje: "Error al crear el evento",
+    });
   }
 };
 
@@ -163,37 +192,54 @@ const actualizarEvento = async (req, res) => {
       });
     }
 
-    const { titulo, descripcion, fecha, hora, salaId, estado } = req.body ?? {};
+    const {
+      titulo,
+      descripcion,
+      imagen,
+      fecha,
+      hora,
+      salaId,
+      estado,
+    } = req.body ?? {};
 
-    // Validar que al menos se envíe un campo para actualizar
-    if (
-      !titulo &&
-      !descripcion &&
-      !fecha &&
-      !hora &&
-      salaId === undefined &&
-      !estado
-    ) {
+    const campos = {
+      titulo,
+      descripcion,
+      imagen,
+      fecha,
+      hora,
+      salaId,
+      estado,
+    };
+
+    if (Object.values(campos).every((valor) => valor === undefined)) {
       return res.status(400).json({
         mensaje:
-          "Debe enviar al menos un campo para actualizar (titulo, descripcion, fecha, hora, salaId o estado)",
+          "Debe enviar al menos un campo para actualizar (titulo, descripcion, imagen, fecha, hora, salaId o estado)",
       });
     }
 
-    // Validar que los campos de texto no estén vacíos
-    if (
-      (titulo !== undefined && titulo.trim() === "") ||
-      (descripcion !== undefined && descripcion.trim() === "") ||
-      (fecha !== undefined && fecha.trim() === "") ||
-      (hora !== undefined && hora.trim() === "") ||
-      (estado !== undefined && estado.trim() === "")
-    ) {
-      return res.status(400).json({
-        mensaje: "Los campos a actualizar no pueden contener valores vacíos",
-      });
+    // Validar los campos de texto recibidos
+    const camposTexto = {
+      titulo,
+      descripcion,
+      imagen,
+      fecha,
+      hora,
+      estado,
+    };
+
+    for (const [campo, valor] of Object.entries(camposTexto)) {
+      if (
+        valor !== undefined &&
+        (typeof valor !== "string" || valor.trim() === "")
+      ) {
+        return res.status(400).json({
+          mensaje: `El campo ${campo} debe contener texto y no puede estar vacío`,
+        });
+      }
     }
 
-    // Validar que la sala exista
     if (salaId !== undefined) {
       if (!mongoose.isValidObjectId(salaId)) {
         return res.status(400).json({
@@ -210,14 +256,12 @@ const actualizarEvento = async (req, res) => {
       }
     }
 
-    // Validar estado
     if (estado !== undefined && !estadosValidos.includes(estado)) {
       return res.status(400).json({
         mensaje: "El estado del evento no es válido",
       });
     }
 
-    // Validar que no exista otro evento con la misma sala, fecha y hora
     const nuevaSalaId = salaId ?? evento.salaId;
     const nuevaFecha = fecha ?? evento.fecha;
     const nuevaHora = hora ?? evento.hora;
@@ -235,13 +279,16 @@ const actualizarEvento = async (req, res) => {
       });
     }
 
-    // Actualizar solo los campos que se proporcionan
     evento.titulo = titulo ?? evento.titulo;
     evento.descripcion = descripcion ?? evento.descripcion;
     evento.fecha = nuevaFecha;
     evento.hora = nuevaHora;
     evento.salaId = nuevaSalaId;
     evento.estado = estado ?? evento.estado;
+
+    if (imagen !== undefined) {
+      evento.imagen = imagen.trim();
+    }
 
     await evento.save();
 
@@ -251,7 +298,9 @@ const actualizarEvento = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ mensaje: "Error al actualizar el evento" });
+    res.status(500).json({
+      mensaje: "Error al actualizar el evento",
+    });
   }
 };
 
@@ -279,35 +328,47 @@ const eliminarEvento = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ mensaje: "Error al eliminar el evento" });
+    res.status(500).json({
+      mensaje: "Error al eliminar el evento",
+    });
   }
 };
 
-// Mostrar vistas
+// Mostrar eventos en la vista Pug
 const mostrarEventosVista = async (req, res) => {
   try {
     await actualizarEstados();
-    const eventos = await Evento.find();
 
-    // Nombres de las salas, para mostrarlos en lugar del ID
+    const eventos = await Evento.find().lean();
+
     const salas = await Salas.find();
     const nombresSalas = {};
+
     salas.forEach((sala) => {
       nombresSalas[String(sala._id)] = sala.nombre;
     });
 
     const mensaje =
-      req.query.creado === "1" ? "Evento creado exitosamente." : null;
-    res.render("eventos", { eventos, nombresSalas, mensaje });
+      req.query.creado === "1"
+        ? "Evento creado exitosamente."
+        : null;
+
+    res.render("eventos", {
+      eventos,
+      nombresSalas,
+      mensaje,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error al cargar los eventos");
   }
 };
 
+// Mostrar formulario para crear un evento
 const mostrarNuevoEventoVista = async (req, res) => {
   try {
     const salas = await Salas.find();
+
     res.render("nuevo_evento", { salas });
   } catch (error) {
     console.error(error);

@@ -11,14 +11,21 @@ block content
   if mensaje
     p.mensaje-exito= mensaje
     script.
-      history.replaceState(null, "", "/eventos/vista")
+      history.replaceState(null, "", "/eventos/vista");
 
   .eventos-grid
     each evento in eventos
-      article.evento-card
+      article.evento-card.evento-card--foto
+        img.evento-card__fondo(
+          src=evento.imagen || "/portada.png"
+          alt=""
+          loading="lazy"
+          onerror="this.onerror=null;this.src='/portada.png'"
+        )
+
         .evento-card__header
           span.evento-card__estado= evento.estado
-          
+
         .evento-card__body
           h3.evento-card__titulo= evento.titulo
           p.evento-card__descripcion= evento.descripcion

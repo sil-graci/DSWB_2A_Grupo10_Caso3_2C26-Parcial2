@@ -12,6 +12,11 @@ const eventoSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    imagen: {
+      type: String,
+      trim: true,
+      default: "/portada.png",
+    },
     fecha: {
       type: String,
       required: true,
@@ -35,17 +40,3 @@ const eventoSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("Evento", eventoSchema);
-
-// class Evento {
-//     constructor(id, titulo, descripcion, fecha, hora, salaId, estado) {
-//         this.id = id;
-//         this.titulo = titulo;
-//         this.descripcion = descripcion;
-//         this.fecha = fecha;
-//         this.hora = hora;
-//         this.salaId = salaId;
-//         this.estado = estado;
-//     }
-// }
-
-// export default Evento;

@@ -737,3 +737,110 @@ body:has(.inicio) > .topbar {
     transform: none;
   }
 }
+/* Imagen de cada evento */
+.evento-card__imagen {
+  display: block;
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+/* Tarjetas de eventos con foto y borde degradado */
+.evento-card.evento-card--foto {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-height: 440px;
+  padding: 3px;
+  border: none;
+  border-radius: 20px;
+  background: linear-gradient(
+    135deg,
+    #ffb36b,
+    #f471a5,
+    #a78bfa
+  );
+  box-shadow: 0 10px 25px rgba(64, 36, 53, 0.25);
+}
+
+/* Foto dentro del borde */
+.evento-card--foto .evento-card__fondo {
+  position: absolute;
+  inset: 3px;
+  z-index: -2;
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  border-radius: 17px;
+  object-fit: cover;
+}
+
+/* Degradado oscuro para que el texto se lea */
+.evento-card--foto::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  z-index: -1;
+  border-radius: 17px;
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 10, 22, 0.25),
+    rgba(15, 10, 22, 0.72) 40%,
+    rgba(15, 10, 22, 0.95)
+  );
+  pointer-events: none;
+}
+
+.evento-card--foto .evento-card__header {
+  padding: 20px;
+  border: none;
+  background: transparent;
+}
+
+.evento-card--foto .evento-card__estado {
+  color: #fff;
+  background: rgba(20, 15, 30, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.evento-card--foto .evento-card__body {
+  margin-top: auto;
+  padding: 24px;
+  color: #fff;
+}
+
+.evento-card--foto .evento-card__titulo {
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1.2;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.evento-card--foto .evento-card__descripcion {
+  color: #f3edf5;
+  line-height: 1.5;
+}
+
+.evento-card--foto .evento-card__datos {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.evento-card--foto .dato:last-child {
+  grid-column: 1 / -1;
+}
+
+.evento-card--foto .dato__label {
+  color: #ffd0a8;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.evento-card--foto .dato__valor {
+  color: #fff;
+}
+
+@media (max-width: 650px) {
+  .evento-card.evento-card--foto {
+    min-height: 400px;
+  }
+}
