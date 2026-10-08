@@ -24,7 +24,7 @@ block content
         )
 
         .evento-card__header
-          span.evento-card__estado= evento.estado
+          span.evento-card__estado(class=`evento-card__estado--${evento.estado}`)= evento.estado
 
         .evento-card__body
           h3.evento-card__titulo= evento.titulo
