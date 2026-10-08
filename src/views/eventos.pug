@@ -9,9 +9,15 @@ block content
     a.boton.boton--nuevo(href="/eventos/nuevo") + Crear nuevo evento
 
   if mensaje
-    p.mensaje-exito= mensaje
+    p#mensaje-exito.mensaje-exito= mensaje
     script.
       history.replaceState(null, "", "/eventos/vista");
+      setTimeout(() => {
+        const mensaje = document.getElementById("mensaje-exito");
+        if (!mensaje) return;
+        mensaje.classList.add("mensaje-exito--oculto");
+        setTimeout(() => mensaje.remove(), 500);
+      }, 4000);
 
   .eventos-grid
     each evento in eventos

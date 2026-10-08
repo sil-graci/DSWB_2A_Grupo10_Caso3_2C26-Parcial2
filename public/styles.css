@@ -858,6 +858,14 @@ body:has(.inicio) > .topbar {
   border-color: #9ca3af;
 }
 
+.mensaje-exito {
+  transition: opacity 0.5s;
+}
+
+.mensaje-exito--oculto {
+  opacity: 0;
+}
+
 @media (max-width: 650px) {
   .evento-card.evento-card--foto {
     min-height: 400px;
