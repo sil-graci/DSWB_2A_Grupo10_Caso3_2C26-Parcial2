@@ -73,12 +73,12 @@ const crearCliente = async (req, res) => {
     const telLimpio = telefono.trim();
 
     // Validar que el teléfono sea estrictamente numérico
-    const soloNumeros = /^\d+$/;
+    const telefonoValido = /^\d{8,15}$/;
 
-    if (!soloNumeros.test(telLimpio)) {
+    if (!telefonoValido.test(telLimpio)) {
       return res.status(400).json({
         mensaje:
-          "El teléfono debe contener únicamente números",
+          "El teléfono debe contener entre 8 y 15 números",
       });
     }
 
@@ -157,13 +157,13 @@ const actualizarCliente = async (req, res) => {
 
     // Validar teléfono numérico
     if (telefono !== undefined) {
-      const soloNumeros = /^\d+$/;
+      const telefonoValido = /^\d{8,15}$/;
       const telefonoLimpio = telefono.trim();
 
-      if (!soloNumeros.test(telefonoLimpio)) {
+      if (!telefonoValido.test(telefonoLimpio)) {
         return res.status(400).json({
           mensaje:
-            "El teléfono debe contener únicamente números",
+            "El teléfono debe contener entre 8 y 15 números",
         });
       }
     }
@@ -236,9 +236,65 @@ const eliminarCliente = async (req, res) => {
 };
 
 // MOSTRAR LISTADO EN PUG
+// const mostrarClientesVista = async (req, res) => {
+//   try {
+//     const clientes = await Cliente.find();
+
+//     const mensaje =
+//       req.query.creado === "1"
+//         ? "Cliente registrado exitosamente."
+//         : null;
+
+//     res.render("clientes", {
+//       clientes,
+//       mensaje
+//     });
+//   } catch (error) {
+//     console.error(error);
+
+//     res.status(500).send(
+//       "Error al cargar los clientes"
+//     );
+//   }
+// };
+
 const mostrarClientesVista = async (req, res) => {
   try {
-    const clientes = await Cliente.find();
+
+    const { buscar } = req.query;
+
+    let clientes;
+
+    if (buscar) {
+
+      clientes = await Cliente.find({
+        $or: [
+          {
+            nombre: {
+              $regex: buscar,
+              $options: "i"
+            }
+          },
+          {
+            apellido: {
+              $regex: buscar,
+              $options: "i"
+            }
+          },
+          {
+            email: {
+              $regex: buscar,
+              $options: "i"
+            }
+          }
+        ]
+      });
+
+    } else {
+
+      clientes = await Cliente.find();
+
+    }
 
     const mensaje =
       req.query.creado === "1"
@@ -247,9 +303,11 @@ const mostrarClientesVista = async (req, res) => {
 
     res.render("clientes", {
       clientes,
-      mensaje,
+      mensaje
     });
+
   } catch (error) {
+
     console.error(error);
 
     res.status(500).send(

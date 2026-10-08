@@ -6,28 +6,44 @@ block content
     h2.section-title Clientes registrados
     p.section-description
       | Consultá la información de los clientes registrados.
-    a.boton.boton--nuevo(href="/clientes/nuevo") + Nuevo Cliente
 
+    p.evento-card__codigo= clientes.length + " clientes registrados"
+
+    form(method="GET" action="/clientes/vista")
+      input(
+        type="text"
+        name="buscar"
+        value=buscar
+        placeholder="Buscar cliente..."
+        style="width:400px; height:42px;"
+      )
+    
+      button.boton(type="submit") Buscar
+
+    a.boton.boton--nuevo(href="/clientes/nuevo") + Nuevo Cliente
+  
   if mensaje
-    p.mensaje-exito= mensaje
+    p#mensaje-exito.mensaje-exito= mensaje
     script.
       history.replaceState(null, "", "/clientes/vista")
-
+      setTimeout(() => {
+        const mensaje = document.getElementById("mensaje-exito");
+        if (!mensaje) return;
+        mensaje.classList.add("mensaje-exito--oculto");
+        setTimeout(() => mensaje.remove(), 500);
+      }, 4000);
+      
   .eventos-grid
     each cliente in clientes
       article.evento-card
         .evento-card__header
           span.evento-card__estado Cliente
-          span.evento-card__codigo= `#CL${cliente._id}`
+          span.evento-card__codigo= cliente.email
 
         .evento-card__body
           h3.evento-card__titulo= `${cliente.nombre} ${cliente.apellido}`
           
           .evento-card__datos
-            .dato
-              span.dato__label ID
-              span.dato__valor= cliente._id
-
             .dato
               span.dato__label Email
               span.dato__valor= cliente.email

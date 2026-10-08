@@ -24,7 +24,7 @@ const clienteSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      match: /^\d+$/
+      match: /^\d{8,15}$/
 }
   },
   {
