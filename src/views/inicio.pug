@@ -7,8 +7,21 @@ block content
         span URBANA
         span CULT
 
-          //- Acceso temporal al menú. Judith integrará el login.
-      a.inicio-boton(href="/login") Ingresar
+      if usuario
+        details.cuenta-menu
+          summary.cuenta-menu__boton(aria-label="Abrir menú de cuenta")
+            span(aria-hidden="true") 👤
+            span(aria-hidden="true") ☰
+
+          .cuenta-menu__contenido
+            a.cuenta-menu__opcion(
+              href= usuario.rol === "admin" ? "/clientes/vista" : "/eventos/vista"
+            )= usuario.rol === "admin" ? "Admin" : "Visitante"
+
+            form(action="/logout" method="POST")
+              button.cuenta-menu__opcion.cuenta-menu__salir(type="submit") Salir
+      else
+        a.inicio-boton(href="/login") Ingresar
 
     section.inicio-hero
       .inicio-hero__contenido
