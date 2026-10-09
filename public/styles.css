@@ -34,11 +34,9 @@ body {
 body:not(:has(.inicio)) {
   background-color: #f2b6a0;
   background-image:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       rgba(255, 205, 175, 0.72),
-      rgba(240, 175, 190, 0.72)
-    ),
+      rgba(240, 175, 190, 0.72)),
     url("/fondo-menu.png");
   background-position: center;
   background-size: cover;
@@ -349,6 +347,80 @@ body:not(:has(.inicio)) .formulario-evento {
   margin-top: 4px;
 }
 
+.login-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+}
+
+.login-card {
+  width: min(420px, 90%);
+  padding: 32px 28px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 20px 45px rgba(17, 24, 39, 0.18);
+}
+
+.login-card h1 {
+  margin: 0 0 22px;
+  color: var(--primario-oscuro);
+  text-align: center;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+}
+
+.login-card form {
+  display: grid;
+  gap: 14px;
+}
+
+.login-card label {
+  color: var(--primario-oscuro);
+  font-weight: 700;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  font: inherit;
+  background: #fff;
+}
+
+.login-card input:focus {
+  outline: none;
+  border-color: var(--primario);
+  box-shadow: 0 0 0 3px rgba(91, 33, 182, 0.15);
+}
+
+.login-card button {
+  margin-top: 10px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  background: #080808;
+  font: inherit;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.login-card button:hover {
+  color: #000000;
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
+.login-card button:hover {
+  color: #000000;
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
 /* Pie de página */
 .footer {
   display: flex;
@@ -369,7 +441,7 @@ body:not(:has(.inicio)) .footer {
 }
 
 /* Portada */
-body:has(.inicio) > .topbar {
+body:has(.inicio)>.topbar {
   display: none;
 }
 
@@ -410,11 +482,9 @@ body:has(.inicio) > .topbar {
   text-align: center;
   background-color: #25202b;
   background-image:
-    linear-gradient(
-      to top,
+    linear-gradient(to top,
       rgba(0, 0, 0, 0.75),
-      rgba(0, 0, 0, 0.1)
-    ),
+      rgba(0, 0, 0, 0.1)),
     url("/portada.png");
   background-position: center;
   background-size: cover;
@@ -476,11 +546,9 @@ body:has(.inicio) > .topbar {
   color: white;
   background-color: #111;
   background-image:
-    linear-gradient(
-      to bottom,
+    linear-gradient(to bottom,
       rgba(0, 0, 0, 0.65),
-      rgba(0, 0, 0, 0.92)
-    ),
+      rgba(0, 0, 0, 0.92)),
     url("/portada.png");
   background-position: center;
   background-size: cover;
@@ -540,7 +608,7 @@ body:has(.inicio) > .topbar {
   scroll-snap-align: start;
 }
 
-.espectaculo > img {
+.espectaculo>img {
   display: block;
   width: 100%;
   height: 260px;
@@ -699,7 +767,7 @@ body:has(.inicio) > .topbar {
     flex-basis: 100%;
   }
 
-  .espectaculo > img {
+  .espectaculo>img {
     height: 220px;
   }
 
@@ -737,6 +805,7 @@ body:has(.inicio) > .topbar {
     transform: none;
   }
 }
+
 /* Imagen de cada evento */
 .evento-card__imagen {
   display: block;
@@ -744,6 +813,7 @@ body:has(.inicio) > .topbar {
   height: 220px;
   object-fit: cover;
 }
+
 /* Tarjetas de eventos con foto y borde degradado */
 .evento-card.evento-card--foto {
   position: relative;
@@ -754,12 +824,10 @@ body:has(.inicio) > .topbar {
   padding: 3px;
   border: none;
   border-radius: 20px;
-  background: linear-gradient(
-    135deg,
-    #ffb36b,
-    #f471a5,
-    #a78bfa
-  );
+  background: linear-gradient(135deg,
+      #ffb36b,
+      #f471a5,
+      #a78bfa);
   box-shadow: 0 10px 25px rgba(64, 36, 53, 0.25);
 }
 
@@ -781,12 +849,10 @@ body:has(.inicio) > .topbar {
   inset: 3px;
   z-index: -1;
   border-radius: 17px;
-  background: linear-gradient(
-    to bottom,
-    rgba(15, 10, 22, 0.25),
-    rgba(15, 10, 22, 0.72) 40%,
-    rgba(15, 10, 22, 0.95)
-  );
+  background: linear-gradient(to bottom,
+      rgba(15, 10, 22, 0.25),
+      rgba(15, 10, 22, 0.72) 40%,
+      rgba(15, 10, 22, 0.95));
   pointer-events: none;
 }
 
