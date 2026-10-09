@@ -64,8 +64,10 @@ app.use(session({
 
 app.use((req, res, next) => {
   res.locals.currentPath = req.path;
+  res.locals.usuario = req.session.usuario || null;
   next();
 });
+
 
 
 app.get("/", (req, res) => {
@@ -77,15 +79,14 @@ app.get("/", (req, res) => {
 app.use(authRoutes);
 
 
-// verificación de rol
-
-const verificarRol = (rolPermitido) => {
+// verificación de rol (acepta uno o varios roles)
+const verificarRol = (...rolesPermitidos) => {
   return (req, res, next) => {
     if (!req.session || !req.session.usuario) {
       return res.status(401).json({ mensaje: "No estás logueado" });
     }
 
-    if (req.session.usuario.rol !== rolPermitido) {
+    if (!rolesPermitidos.includes(req.session.usuario.rol)) {
       return res.status(403).json({ mensaje: "No tenés permisos" });
     }
 
@@ -95,9 +96,27 @@ const verificarRol = (rolPermitido) => {
 
 // Rutas
 
-app.use("/eventos", verificarRol("visitante"), eventoRoutes);
+// Eventos: el visitante solo puede ver la lista; crear, editar y borrar es del admin
+app.use(
+  "/eventos",
+  (req, res, next) => {
+    const soloLectura = req.method === "GET" && req.path !== "/nuevo";
+    verificarRol(...(soloLectura ? ["admin", "visitante"] : ["admin"]))(req, res, next);
+  },
+  eventoRoutes
+);
+
 app.use("/clientes", verificarRol("admin"), clienteRoutes);
-app.use("/salas", verificarRol("admin"), salasRoutes);
+
+// Salas: el visitante solo puede pedir la lista (para mostrar los nombres en eventos)
+app.use(
+  "/salas",
+  (req, res, next) => {
+    const listaParaVisitante = req.method === "GET" && req.path === "/";
+    verificarRol(...(listaParaVisitante ? ["admin", "visitante"] : ["admin"]))(req, res, next);
+  },
+  salasRoutes
+);
 
 
 // Manejador 404 para rutas inexistentes
