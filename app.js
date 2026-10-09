@@ -9,6 +9,7 @@ import authRoutes from "./src/routes/auth.routes.js";
 import eventoRoutes from "./src/routes/eventos.routes.js";
 import clienteRoutes from "./src/routes/clientes.routes.js";
 import salasRoutes from "./src/routes/salas.routes.js";
+import entradasRoutes from "./src/routes/entradas.routes.js";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -98,6 +99,7 @@ const verificarRol = (rolPermitido) => {
 app.use("/eventos", verificarRol("visitante"), eventoRoutes);
 app.use("/clientes", verificarRol("admin"), clienteRoutes);
 app.use("/salas", verificarRol("admin"), salasRoutes);
+app.use("/entradas", verificarRol("visitante"), entradasRoutes);
 
 
 // Manejador 404 para rutas inexistentes

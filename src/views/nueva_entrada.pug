@@ -1,0 +1,25 @@
+extends layout
+
+block content
+  .section-header
+    p.section-label COMPRA DE ENTRADAS
+    h2.section-title= evento.titulo
+    p.section-description
+      | Seleccioná el cliente que va a comprar la entrada para este evento.
+
+  form.formulario-evento(action="/entradas" method="POST")
+    input(type="hidden" name="eventoId" value=evento._id)
+
+    .campo
+      label(for="clienteId") Cliente
+      select#clienteId(name="clienteId" required)
+        option(value="" disabled selected) Seleccioná un cliente
+        each cliente in clientes
+          option(value=cliente._id)= `${cliente.nombre} ${cliente.apellido}`
+
+    .formulario-evento__acciones
+      a.boton.boton--secundario(href="/eventos/vista") Cancelar
+      button.boton(type="submit" disabled=clientes.length === 0) Comprar entrada
+
+    if clientes.length === 0
+      p.section-description No hay clientes registrados para seleccionar.

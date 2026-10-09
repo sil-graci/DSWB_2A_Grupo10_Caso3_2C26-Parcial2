@@ -48,3 +48,6 @@ block content
             .dato
               span.dato__label Sala
               span.dato__valor= nombresSalas[String(evento.salaId)] || "Sala eliminada"
+
+          if evento.estado === "activo"
+            a.boton(href=`/entradas/nueva/${evento._id}`) Comprar entrada
