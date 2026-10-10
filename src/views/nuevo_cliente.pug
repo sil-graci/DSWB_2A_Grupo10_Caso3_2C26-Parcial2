@@ -1,30 +1,68 @@
 extends layout
 
 block content
-	.section-header
-		p.section-label PANEL DE CLIENTES
-		h2.section-title Crear nuevo cliente
-		p.section-description
-			| Completá los datos para registrar un nuevo cliente.
+  .section-header
+    p.section-label PANEL DE CLIENTES
 
-	form.formulario-evento(action="/clientes" method="POST")
-		.campo
-			label(for="nombre") Nombre
-			input#nombre(type="text" name="nombre" required)
+    h2.section-title= cliente ? "Modificar cliente" : "Crear nuevo cliente"
 
-		.campo
-			label(for="apellido") Apellido
-			input#apellido(type="text" name="apellido" required)
+    p.section-description
+      if cliente
+        | Modificá los datos del cliente seleccionado.
+      else
+        | Completá los datos para registrar un nuevo cliente.
 
-		.campo
-			label(for="email") Email
-			input#email(type="email" name="email" required)
+  p#mensaje-formulario
 
-		.campo
-			label(for="telefono") Teléfono
-			//input#telefono(type="tel" name="telefono" required)
-			input#telefono(type="tel" name="telefono" pattern="[0-9]{8,15}" minlength="8" maxlength="15" title="Ingrese entre 8 y 15 números" required)
+  form#form-cliente.formulario-evento(
+    data-id=cliente ? cliente._id : ""
+  )
+    .campo
+      label(for="nombre") Nombre
+      input#nombre(
+        type="text"
+        name="nombre"
+        value=cliente ? cliente.nombre : ""
+        required
+      )
 
-		.formulario-evento__acciones
-			a.boton.boton--secundario(href="/clientes/vista") Cancelar
-			button.boton(type="submit") Guardar cliente
+    .campo
+      label(for="apellido") Apellido
+      input#apellido(
+        type="text"
+        name="apellido"
+        value=cliente ? cliente.apellido : ""
+        required
+      )
+
+    .campo
+      label(for="email") Email
+      input#email(
+        type="email"
+        name="email"
+        value=cliente ? cliente.email : ""
+        required
+      )
+
+    .campo
+      label(for="telefono") Teléfono
+      input#telefono(
+        type="tel"
+        name="telefono"
+        value=cliente ? cliente.telefono : ""
+        pattern="[0-9]{8,15}"
+        minlength="8"
+        maxlength="15"
+        title="Ingrese entre 8 y 15 números"
+        required
+      )
+
+    .formulario-evento__acciones
+      a.boton.boton--secundario(
+        href="/clientes/vista"
+      )
+        | Cancelar
+
+      button.boton.boton-formulario(type="submit")= cliente ? "Guardar cambios" : "Guardar cliente"
+
+  script(src="/js/cliente-form.js")

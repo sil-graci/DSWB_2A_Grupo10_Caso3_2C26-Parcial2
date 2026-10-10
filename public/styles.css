@@ -295,6 +295,20 @@ body:not(:has(.inicio)) .formulario-evento {
   background-color: var(--primario);
 }
 
+button.boton-formulario {
+  border: none;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+/* Mantiene un tamaño equilibrado cuando el filtro devuelve un solo cliente */
+#lista-clientes .evento-card:only-child {
+  width: 100%;
+  max-width: 360px;
+  justify-self: start;
+}
+
+
 /* Formularios */
 .formulario-evento {
   display: grid;

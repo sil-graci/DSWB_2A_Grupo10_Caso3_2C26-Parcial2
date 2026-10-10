@@ -10,7 +10,6 @@ import {
     eliminarCliente,
     mostrarClientesVista,
     mostrarNuevoClienteVista,
-
 } from "../controllers/clientes.controllers.js";
 
 //Rutas para vistas (Pug / HTML)
@@ -23,6 +22,7 @@ router.get("/:id", obtenerClientePorId);  // GET /clientes/:id
 router.post("/", crearCliente);           // POST /clientes
 router.put("/:id", actualizarCliente);    // PUT /clientes/:id
 router.delete("/:id", eliminarCliente);   // DELETE /clientes/:id
+
 
 // exportar router
 export default router;
