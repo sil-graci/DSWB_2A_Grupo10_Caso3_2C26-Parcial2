@@ -937,3 +937,27 @@ body:has(.inicio)>.topbar {
     min-height: 400px;
   }
 }
+
+
+.mensaje-error {
+  color: #b00020;
+  font-weight: 600;
+  min-height: 1.2em;
+}
+
+.filtros-eventos {
+  display: flex;
+  gap: 12px;
+  margin: 0 0 24px;
+}
+
+.filtros-eventos .boton {
+  background-color: var(--primario);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.filtros-eventos .boton:hover {
+  background-color: var(--primario-oscuro);
+}

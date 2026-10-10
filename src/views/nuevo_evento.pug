@@ -7,7 +7,7 @@ block content
     p.section-description
       | Completá los datos para registrar un nuevo evento.
 
-  form.formulario-evento(action="/eventos" method="POST")
+  form#formEvento.formulario-evento
     .campo
       label(for="titulo") Título
       input#titulo(type="text" name="titulo" required)
@@ -38,6 +38,11 @@ block content
         option(value="lleno") Lleno
         option(value="finalizado") Finalizado
 
+    p#mensajeError.mensaje-error
+
     .formulario-evento__acciones
       a.boton.boton--secundario(href="/eventos/vista") Cancelar
       button.boton(type="submit") Guardar evento
+
+  script(src="/js/nuevo_evento.js")
+
