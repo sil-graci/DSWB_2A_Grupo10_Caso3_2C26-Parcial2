@@ -107,7 +107,19 @@ app.use(
   eventoRoutes
 );
 
-app.use("/clientes", verificarRol("admin"), clienteRoutes);
+app.use(
+  "/clientes",
+  (req, res, next) => {
+    const registroPublico =
+      (req.method === "GET" && req.path === "/nuevo") ||
+      (req.method === "POST" && req.path === "/");
+
+    if (registroPublico) return next();
+
+    return verificarRol("admin")(req, res, next);
+  },
+  clienteRoutes
+);
 
 // Salas: el visitante solo puede pedir la lista (para mostrar los nombres en eventos)
 app.use(

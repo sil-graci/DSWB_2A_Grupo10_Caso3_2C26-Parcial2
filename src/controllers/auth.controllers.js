@@ -2,7 +2,9 @@ import bcrypt from "bcryptjs";
 import Usuario from "../models/Usuario.js";
 
 export const mostrarLogin = (req, res) => {
-    res.render("login");
+    res.render("login", {
+        registrado: req.query.registrado === "1"
+    });
 };
 
 export const iniciarSesion = async (req, res) => {

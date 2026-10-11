@@ -1,6 +1,9 @@
 extends layout
 
 block content
+  if registrado
+    script.
+      alert("¡Cuenta creada exitosamente!");
   .login-wrapper
     .login-card
       h1 Iniciar sesión
@@ -13,3 +16,7 @@ block content
         input#password(type="password", name="password", required)
 
         button(type="submit") Entrar
+        p
+          | ¿No tienes una cuenta? 
+          a(href="/clientes/nuevo") Regístrate
+        
