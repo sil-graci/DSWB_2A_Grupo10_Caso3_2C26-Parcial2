@@ -8,18 +8,7 @@ block content
         span CULT
 
       if usuario
-        details.cuenta-menu
-          summary.cuenta-menu__boton(aria-label="Abrir menú de cuenta")
-            span(aria-hidden="true") 👤
-            span(aria-hidden="true") ☰
-
-          .cuenta-menu__contenido
-            a.cuenta-menu__opcion(
-              href= usuario.rol === "admin" ? "/clientes/vista" : "/eventos/vista"
-            )= usuario.rol === "admin" ? "Admin" : "Visitante"
-
-            form(action="/logout" method="POST")
-              button.cuenta-menu__opcion.cuenta-menu__salir(type="submit") Salir
+        a.inicio-boton(href="/eventos/vista") Ver eventos
       else
         a.inicio-boton(href="/login") Ingresar
 
@@ -35,87 +24,72 @@ block content
           aria-expanded="false"
         ) Conocé más
 
-    //- Cartelera de ejemplo, pendiente de conectar con MongoDB
     section.cartelera#cartelera(hidden)
       .cartelera-encabezado
         div
           p Próximos encuentros
           h2 Descubrí nuestra programación
 
-      .cartelera-marco
-        button.cartelera-flecha.cartelera-flecha--izquierda(
-          type="button"
-          data-direccion="-1"
-          aria-label="Ver espectáculos anteriores"
-          aria-controls="lista-espectaculos"
-        ) ❮
+      if errorCartelera
+        p= errorCartelera
+      else if eventos.length === 0
+        p No hay eventos activos próximos disponibles.
+      else
+        .cartelera-marco
+          button.cartelera-flecha.cartelera-flecha--izquierda(
+            type="button"
+            data-direccion="-1"
+            aria-label="Ver eventos anteriores"
+            aria-controls="lista-espectaculos"
+          ) ❮
 
-        .cartelera-lista#lista-espectaculos(
-          tabindex="0"
-          role="region"
-          aria-label="Espectáculos"
-        )
-          article.espectaculo
-            img(
-              src="/concierto.png"
-              alt="Banda tocando en vivo en un centro cultural"
-              onerror="this.onerror=null;this.src='/portada.png'"
-            )
+          .cartelera-lista#lista-espectaculos(
+            tabindex="0"
+            role="region"
+            aria-label="Eventos disponibles"
+          )
+            each evento in eventos
+              article.espectaculo
+                img(
+                  src=evento.imagen || "/portada.png"
+                  alt=evento.titulo
+                  loading="lazy"
+                  onerror="this.onerror=null;this.src='/portada.png'"
+                )
 
-            .espectaculo-contenido
-              span.espectaculo-tipo Música
-              h3 Concierto en vivo
-              p Una noche para disfrutar de la música.
+                .espectaculo-contenido
+                  span.espectaculo-tipo Activo
+                  h3= evento.titulo
+                  p= evento.descripcion
 
-              details.espectaculo-detalles
-                summary Ver más
-                p Aquí mostraremos la fecha, el horario y la sala del evento.
+                  details.espectaculo-detalles
+                    summary Ver más
+                    p Fecha: #{evento.fecha}
+                    p Hora: #{evento.hora}
+                    p Sala: #{evento.nombreSala}
 
-          article.espectaculo
-            img(
-              src="/teatro.jpg"
-              alt="Actores interpretando una obra de teatro"
-              onerror="this.onerror=null;this.src='/portada.png'"
-            )
+                  if usuario
+                    a.boton(href="/entradas/nueva/" + evento._id) Comprar entrada
+                  else
+                    a.boton(href="/login") Iniciá sesión para comprar
 
-            .espectaculo-contenido
-              span.espectaculo-tipo Teatro
-              h3 Teatro en Urbana Cult
-              p Historias que cobran vida sobre el escenario.
-
-              details.espectaculo-detalles
-                summary Ver más
-                p Aquí mostraremos la fecha, el horario y la sala del evento.
-
-          article.espectaculo
-            img(
-              src="/exposicion.jpg"
-              alt="Visitantes recorriendo una exposición de arte"
-              onerror="this.onerror=null;this.src='/portada.png'"
-            )
-
-            .espectaculo-contenido
-              span.espectaculo-tipo Arte
-              h3 Exposición de arte
-              p Descubrí nuevas miradas y artistas.
-
-              details.espectaculo-detalles
-                summary Ver más
-                p Aquí mostraremos la fecha, el horario y la sala del evento.
-
-        button.cartelera-flecha.cartelera-flecha--derecha(
-          type="button"
-          data-direccion="1"
-          aria-label="Ver siguientes espectáculos"
-          aria-controls="lista-espectaculos"
-        ) ❯
+          button.cartelera-flecha.cartelera-flecha--derecha(
+            type="button"
+            data-direccion="1"
+            aria-label="Ver siguientes eventos"
+            aria-controls="lista-espectaculos"
+          ) ❯
 
     script.
       (() => {
-        const botonMostrar = document.querySelector("#mostrar-cartelera");
-        const cartelera = document.querySelector("#cartelera");
-        const lista = document.querySelector("#lista-espectaculos");
-        const flechas = document.querySelectorAll(".cartelera-flecha");
+        const botonMostrar =
+          document.querySelector("#mostrar-cartelera");
+        const cartelera =
+          document.querySelector("#cartelera");
+        const lista =
+          document.querySelector("#lista-espectaculos");
+        const flechas =
+          document.querySelectorAll(".cartelera-flecha");
 
         const reducirMovimiento = window.matchMedia(
           "(prefers-reduced-motion: reduce)"
@@ -126,38 +100,57 @@ block content
           botonMostrar.setAttribute("aria-expanded", "true");
 
           cartelera.scrollIntoView({
-            behavior: reducirMovimiento.matches ? "auto" : "smooth",
+            behavior: reducirMovimiento.matches
+              ? "auto"
+              : "smooth",
             block: "start"
           });
         });
 
+        if (!lista) return;
+
         flechas.forEach((flecha) => {
           flecha.addEventListener("click", () => {
-            const tarjeta = lista.querySelector(".espectaculo");
+            const tarjeta =
+              lista.querySelector(".espectaculo");
 
             if (!tarjeta) return;
 
-            const separacion = parseFloat(
-              getComputedStyle(lista).gap
-            ) || 0;
+            const separacion =
+              parseFloat(getComputedStyle(lista).gap) || 0;
 
             const distancia =
-              tarjeta.getBoundingClientRect().width + separacion;
+              tarjeta.getBoundingClientRect().width +
+              separacion;
 
-            const direccion = Number(flecha.dataset.direccion);
-            const limite = lista.scrollWidth - lista.clientWidth;
+            const direccion =
+              Number(flecha.dataset.direccion);
 
-            let destino = lista.scrollLeft + direccion * distancia;
+            const limite = Math.max(
+              0,
+              lista.scrollWidth - lista.clientWidth
+            );
 
-            if (direccion === 1 && lista.scrollLeft >= limite - 2) {
+            let destino =
+              lista.scrollLeft + direccion * distancia;
+
+            if (
+              direccion === 1 &&
+              lista.scrollLeft >= limite - 2
+            ) {
               destino = 0;
-            } else if (direccion === -1 && lista.scrollLeft <= 2) {
+            } else if (
+              direccion === -1 &&
+              lista.scrollLeft <= 2
+            ) {
               destino = limite;
             }
 
             lista.scrollTo({
               left: destino,
-              behavior: reducirMovimiento.matches ? "auto" : "smooth"
+              behavior: reducirMovimiento.matches
+                ? "auto"
+                : "smooth"
             });
           });
         });
