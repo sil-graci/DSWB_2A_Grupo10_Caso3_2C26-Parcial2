@@ -31,7 +31,9 @@ async function cargarEventos(ruta = rutaActual) {
 
     listaEventos.innerHTML = "";
 
-    eventos.forEach((evento) => {
+        eventos.forEach((evento) => {
+      const puedeComprar = (esAdmin || esVisitante) && evento.estado === "activo";
+
       listaEventos.innerHTML += `
       <article class="evento-card evento-card--foto">
         <img class="evento-card__fondo" src="${evento.imagen || "/portada.png"}" alt="" loading="lazy"
@@ -52,22 +54,63 @@ async function cargarEventos(ruta = rutaActual) {
           </div>
 
           ${
-            esVisitante && evento.estado === "activo"
-              ? `<a class="boton" style="margin-top: 20px;" href="/entradas/nueva/${evento._id}">Comprar entrada</a>`
-              : ""
-          }
-
-          ${
-            esAdmin
-              ? `<div class="formulario-evento__acciones">
-            <a class="boton" href="/eventos/nuevo?id=${evento._id}">Modificar</a>
-            <button class="boton" style="border: none; cursor: pointer;" onclick="eliminar('${evento._id}')">Eliminar</button>
+            puedeComprar || esAdmin
+              ? `<div class="evento-card__acciones">
+            ${
+              puedeComprar
+                ? `<a class="boton boton--chico" href="/entradas/nueva/${evento._id}">Comprar entrada</a>`
+                : ""
+            }
+            ${
+              esAdmin
+                ? `<a class="boton boton--chico" href="/eventos/nuevo?id=${evento._id}">Modificar</a>
+            <button class="boton boton--chico" onclick="eliminar('${evento._id}')">Eliminar</button>`
+                : ""
+            }
           </div>`
               : ""
           }
         </div>
       </article>`;
     });
+
+    // eventos.forEach((evento) => {
+    //   listaEventos.innerHTML += `
+    //   <article class="evento-card evento-card--foto">
+    //     <img class="evento-card__fondo" src="${evento.imagen || "/portada.png"}" alt="" loading="lazy"
+    //       onerror="this.onerror=null;this.src='/portada.png'">
+
+    //     <div class="evento-card__header">
+    //       <span class="evento-card__estado evento-card__estado--${evento.estado}">${evento.estado}</span>
+    //     </div>
+
+    //     <div class="evento-card__body">
+    //       <h3 class="evento-card__titulo">${evento.titulo}</h3>
+    //       <p class="evento-card__descripcion">${evento.descripcion}</p>
+
+    //       <div class="evento-card__datos">
+    //         <div class="dato"><span class="dato__label">Fecha</span><span class="dato__valor">${evento.fecha}</span></div>
+    //         <div class="dato"><span class="dato__label">Hora</span><span class="dato__valor">${evento.hora}</span></div>
+    //         <div class="dato"><span class="dato__label">Sala</span><span class="dato__valor">${nombresSalas[evento.salaId] || "Sala eliminada"}</span></div>
+    //       </div>
+
+    //       ${
+    //         esVisitante && evento.estado === "activo"
+    //           ? `<a class="boton" style="margin-top: 20px;" href="/entradas/nueva/${evento._id}">Comprar entrada</a>`
+    //           : ""
+    //       }
+
+    //       ${
+    //         esAdmin
+    //           ? `<div class="formulario-evento__acciones">
+    //         <a class="boton" href="/eventos/nuevo?id=${evento._id}">Modificar</a>
+    //         <button class="boton" style="border: none; cursor: pointer;" onclick="eliminar('${evento._id}')">Eliminar</button>
+    //       </div>`
+    //           : ""
+    //       }
+    //     </div>
+    //   </article>`;
+    // });
   } catch (error) {
     console.error(error);
     listaEventos.innerHTML = `<p>No se pudieron cargar los eventos: ${error.message}</p>`;
