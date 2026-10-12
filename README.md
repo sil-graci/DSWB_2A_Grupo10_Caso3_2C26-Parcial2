@@ -170,3 +170,44 @@ JSON
 * Funcionalidad de Cancelación de Entradas con liberación de vacantes.
 * Implementación de consultas de negocio dependientes del módulo de Entradas: entradas vendidas y entradas disponibles por evento.
 * Migración de persistencia de archivos JSON hacia base de datos MongoDB.
+
+## Módulo Salas
+
+El módulo Salas fue migrado de JSON a MongoDB utilizando Mongoose.
+
+Se adaptaron el modelo y el controller para trabajar con operaciones asincrónicas mediante `async/await`, utilizando `find`, `findById`, `save`, `findByIdAndUpdate` y `findByIdAndDelete`.
+
+También se incorporaron validaciones simples y manejo de errores con `try/catch`.
+
+El CRUD completo fue probado correctamente utilizando la aplicación y Thunder Client.
+
+## Menú según rol de usuario
+
+El menú de navegación se adapta según el rol del usuario autenticado.
+
+### Administrador
+
+El usuario con rol `admin` puede visualizar:
+
+* Inicio
+* Eventos
+* Entradas
+* Reservas
+* Clientes
+* Salas
+
+### Visitante
+
+El usuario con rol `visitante` puede visualizar:
+
+* Inicio
+* Eventos
+* Entradas
+
+Las opciones Reservas, Clientes y Salas no se muestran para el visitante.
+
+## Uso de IA
+
+Usamos IA como apoyo para resolver dudas puntuales durante el desarrollo.
+
+La consultamos principalmente para temas relacionados con MongoDB, Mongoose, operaciones sobre la base de datos, async/await y manejo de roles.
