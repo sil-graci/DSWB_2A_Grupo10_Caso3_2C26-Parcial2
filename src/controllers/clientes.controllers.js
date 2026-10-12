@@ -175,9 +175,16 @@ const actualizarCliente = async (req, res) => {
     }
     const cliente = await Cliente.findById(id);
 
-    if (!cliente) {
+    if (!cliente) {return res.status(404).json({mensaje: "Cliente no encontrado",}); }
+
+    const usuario = await Usuario.findOne({
+      clienteId: id,
+    });
+
+    if (!usuario) {
       return res.status(404).json({
-        mensaje: "Cliente no encontrado",
+        mensaje:
+          "No se encontró el usuario asociado al cliente",
       });
     }
 
@@ -217,36 +224,40 @@ const actualizarCliente = async (req, res) => {
       if (telefonoLimpio !== "" &&
         !telefonoValido.test(telefonoLimpio)
       ) {
-        return res.status(400).json({
-          mensaje:
-            "El teléfono debe contener entre 8 y 15 números",
-        });
-      }
+        return res.status(400).json({ mensaje:"El teléfono debe contener entre 8 y 15 números", }); }
     }
     
     // Validar el DNI solamente si fue informado
     if (dni !== undefined &&
       !/^\d{8}$/.test(dni.trim())
     ) {
-      return res.status(400).json({
-        mensaje:
-          "El DNI debe contener 8 dígitos numéricos",
-      });
-    }
+      return res.status(400).json({mensaje:"El DNI debe contener 8 dígitos numéricos", }); }
 
-    // Actualizar únicamente los campos proporcionados
+    // Validar que no exista otro cliente con el mismo mail
+    const emailLimpio = email !== undefined ? email.trim().toLowerCase()
+      : cliente.email;
+
+    const emailExistente = await Usuario.findOne({
+      email: emailLimpio, _id: { $ne: usuario._id },  }); // Excluir el usuario actual de la búsqueda
+
+    if (emailExistente) {return res.status(400).json({
+        mensaje: "Ya existe otro usuario registrado con ese email", }); }
+
+
+    // Actualizar en clientelos campos proporcionados
     cliente.nombre = nombre !== undefined ? nombre.trim() : cliente.nombre;
     cliente.apellido = apellido !== undefined  ? apellido.trim()  : cliente.apellido;
     cliente.dni =  dni !== undefined ? dni.trim() : cliente.dni;
-    cliente.email = email !== undefined ? email.trim().toLowerCase() : cliente.email;
+    cliente.email = emailLimpio;
     cliente.telefono =  telefono !== undefined ? telefono.trim() : cliente.telefono;
 
-    await cliente.save();
+    usuario.email = emailLimpio; // Actualizar el email en el modelo Usuario
 
-    res.json({
-      mensaje: "Cliente actualizado exitosamente",cliente,});
-  } catch (error) {
-    console.error(error);
+    await cliente.save();
+    await usuario.save();
+
+    res.json({mensaje: "Cliente actualizado exitosamente",cliente,});
+  } catch (error) {console.error(error);
 
     res.status(500).json({ mensaje: "Error al actualizar el cliente",});
   }
@@ -256,30 +267,20 @@ const actualizarCliente = async (req, res) => {
 const eliminarCliente = async (req, res) => {
   try {
     const { id } = req.params;
-
     if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({
-        mensaje: "El ID proporcionado no es válido",
-      });
-    }
+      return res.status(400).json({mensaje: "El ID proporcionado no es válido", }); }
 
-    const eliminado = await Cliente.findByIdAndDelete(id);
+    const cliente = await Cliente.findById(id);
+    if (!cliente) {return res.status(404).json({mensaje: "Cliente no encontrado", });  }
 
-    if (!eliminado) {
-      return res.status(404).json({
-        mensaje: "Cliente no encontrado",
-      });
-    }
+    await Usuario.findOneAndDelete({clienteId: id, });
+    await Cliente.findByIdAndDelete(id);
 
-    res.json({
-      mensaje: "Cliente eliminado exitosamente",
-    });
+    res.json({mensaje: "Cliente eliminado exitosamente", });
   } catch (error) {
     console.error(error);
 
-    res.status(500).json({
-      mensaje: "Error al eliminar el cliente",
-    });
+    res.status(500).json({mensaje: "Error al eliminar el cliente",  });
   }
 };
 
@@ -305,13 +306,10 @@ const mostrarClientesVista = async (req, res) => {
 };
 
 // MOSTRAR VISTAS
-const mostrarNuevoClienteVista = (req, res) => {
-  res.render("nuevo_cliente", {
+const mostrarNuevoClienteVista = (req, res) => { res.render("nuevo_cliente", {
     cliente: null, // No hay cliente existente para editar
   });
 };
-
-
 
 // EXPORTAR FUNCIONES
 export {
