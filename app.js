@@ -126,7 +126,7 @@ app.use(
   "/salas",
   (req, res, next) => {
     const listaParaVisitante = req.method === "GET" && req.path === "/";
-    verificarRol(...(listaParaVisitante ? ["admin"] : ["admin"]))(req, res, next);
+    verificarRol(...(listaParaVisitante ? ["admin", "visitante"] : ["admin"]))(req, res, next);
   },
   salasRoutes
 );
