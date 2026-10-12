@@ -3,7 +3,9 @@ extends layout
 block content
   if registrado
     script.
-      alert("¡Cuenta creada exitosamente!");
+      alert("¡Cuenta creada exitosamente!\n" +
+       "Contraseña temporal: 1234\n" +
+      "Por seguridad, se recomienda cambiarla cuando esa opción esté disponible");
   .login-wrapper
     .login-card
       h1 Iniciar sesión
@@ -19,4 +21,3 @@ block content
         p
           | ¿No tienes una cuenta? 
           a(href="/clientes/nuevo") Regístrate
-        

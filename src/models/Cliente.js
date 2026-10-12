@@ -4,28 +4,51 @@ const clienteSchema = new mongoose.Schema(
   {
     nombre: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
     },
 
     apellido: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
     },
 
+    dni: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+
+      validate: {
+        validator: (valor) =>
+          /^\d{8}$/.test(valor),
+
+        message:
+          "El DNI debe contener 8 dígitos",
+      },
+    },
+    
     email: {
       type: String,
       required: true,
       trim: true,
     },
-
+      
     telefono: {
       type: String,
-      required: true,
+      required: false,
       trim: true,
-      match: /^\d{8,15}$/
-}
+
+      validate: {
+        validator: (valor) =>
+          valor === "" ||
+          /^\d{8,15}$/.test(valor),
+
+        message:
+          "El teléfono debe contener entre 8 y 15 números",
+      },
+    },  
   },
   {
     timestamps: true,
@@ -33,18 +56,3 @@ const clienteSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("Cliente", clienteSchema);
-
-
-
-
-
-// class Cliente {
-//     constructor(id, nombre, apellido, email, telefono) {
-//         this.id=id;
-//         this.nombre=nombre;
-//         this.apellido=apellido;
-//         this.email=email;
-//         this.telefono=telefono; 
-//     }
-// }
-// export default Cliente;

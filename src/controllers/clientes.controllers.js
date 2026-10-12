@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 import Cliente from "../models/Cliente.js";
+import Usuario from "../models/Usuario.js";
 
 // GET ALL
 const obtenerClientes = async (req, res) => {
@@ -9,24 +11,10 @@ const obtenerClientes = async (req, res) => {
     const filtro = buscar
       ? {
           $or: [
-            {
-              nombre: {
-                $regex: buscar,
-                $options: "i",
-              },
-            },
-            {
-              apellido: {
-                $regex: buscar,
-                $options: "i",
-              },
-            },
-            {
-              email: {
-                $regex: buscar,
-                $options: "i",
-              },
-            },
+            {nombre: {$regex: buscar, $options: "i", },},
+            {apellido: {$regex: buscar, $options: "i", },},
+            {dni: {$regex: buscar, $options: "i", },},
+            {email: {$regex: buscar, $options: "i", },},     
           ],
         }
       : {};
@@ -75,56 +63,98 @@ const obtenerClientePorId = async (req, res) => {
 // CREATE
 const crearCliente = async (req, res) => {
   try {
-    const { nombre, apellido, email, telefono } = req.body ?? {};
-
+    const { nombre, apellido, dni, email, telefono } = req.body ?? {};
     // Validar datos obligatorios y cadenas vacías
     if (
-      !nombre ||
-      !apellido ||
+      !dni ||
       !email ||
-      !telefono ||
-      nombre.trim() === "" ||
-      apellido.trim() === "" ||
-      email.trim() === "" ||
-      telefono.trim() === ""
-    ) {
+      dni.trim() === "" ||
+      email.trim() === ""
+    ){
       return res.status(400).json({
         mensaje:
           "Faltan datos obligatorios o contienen valores vacíos",
       });
     }
 
-    const nomLimpio = nombre.trim();
-    const apeLimpio = apellido.trim();
+    const nomLimpio = nombre?.trim() || "";
+    const apeLimpio = apellido?.trim() || "";
+    const dniLimpio = dni.trim();
     const emailLimpio = email.trim().toLowerCase();
-    const telLimpio = telefono.trim();
+    const telLimpio = telefono?.trim() || "";
 
+    // Validar que el DNI sea estrictamente numérico y tenga 8 dígitos
+    const dniValido = /^\d{8}$/;
+    if (!dniValido.test(dniLimpio)) {
+      return res.status(400).json({
+        mensaje:
+          "El DNI debe contener 8 dígitos numéricos",
+      });
+    }
+
+    // Validar clientes con el mismo DNI
+    const clienteExistente = await Cliente.findOne({dni: dniLimpio,});
+      if (clienteExistente) {
+        return res.status(400).json({
+          mensaje:
+            "Ya existe un cliente registrado con ese DNI",
+        });
+      }
+    
+    //Validar usuarios con el mismo email
+    const usuarioExistente =  await Usuario.findOne({email: emailLimpio, });
+      if (usuarioExistente) {
+        return res.status(400).json({
+          mensaje:
+            "Ya existe un usuario registrado con ese email",
+        });
+      }
+    
     // Validar que el teléfono sea estrictamente numérico
     const telefonoValido = /^\d{8,15}$/;
-
-    if (!telefonoValido.test(telLimpio)) {
+    if (telLimpio !== "" && !telefonoValido.test(telLimpio)) {
       return res.status(400).json({
         mensaje:
           "El teléfono debe contener entre 8 y 15 números",
       });
     }
 
-    const nuevoCliente = await Cliente.create({
+    //Guardar cliente y usuario en la base de datos
+   const nuevoCliente = await Cliente.create({
       nombre: nomLimpio,
       apellido: apeLimpio,
+      dni: dniLimpio,
       email: emailLimpio,
       telefono: telLimpio,
     });
 
-    // Redirección si la solicitud proviene del formulario Pug
-    if (req.headers.accept?.includes("text/html")) {
-      return res.redirect("/clientes/vista?creado=1");
-    }
+    try {
+      const passwordHash = await bcrypt.hash("1234", 10);
 
-    res.status(201).json({
-      mensaje: "Cliente creado exitosamente",
-      cliente: nuevoCliente,
+      await Usuario.create({
+        email: emailLimpio,
+        passwordHash,
+        rol: "visitante",
+        clienteId: nuevoCliente._id,
+      });
+
+    } catch (error) {
+      await Cliente.findByIdAndDelete(
+        nuevoCliente._id
+      );
+
+      throw error;
+    }
+    
+    const redireccion = req.session?.usuario?.rol === "admin"
+        ? "/clientes/vista?creado=1"
+        : "/login?registrado=1";
+
+    return res.status(201).json({ mensaje:"Cliente y usuario creados exitosamente",
+      cliente: nuevoCliente, redireccion,
     });
+
+
   } catch (error) {
     console.error(error);
 
@@ -138,13 +168,11 @@ const crearCliente = async (req, res) => {
 const actualizarCliente = async (req, res) => {
   try {
     const { id } = req.params;
-
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({
         mensaje: "El ID proporcionado no es válido",
       });
     }
-
     const cliente = await Cliente.findById(id);
 
     if (!cliente) {
@@ -153,81 +181,74 @@ const actualizarCliente = async (req, res) => {
       });
     }
 
-    const { nombre, apellido, email, telefono } =
+    const { nombre, apellido,dni , email, telefono } =
       req.body ?? {};
 
     // Validar que al menos se envíe un campo
     if (
       nombre === undefined &&
       apellido === undefined &&
+      dni === undefined &&
       email === undefined &&
       telefono === undefined
     ) {
       return res.status(400).json({
         mensaje:
-          "Debe enviar al menos un campo para actualizar (nombre, apellido, email o telefono)",
+          "Debe enviar al menos un campo para actualizar",
       });
     }
 
-    // Validar que no se envíen campos vacíos
+    // DNI y email son obligatorios y no pueden quedar vacíos
     if (
-      (nombre !== undefined && nombre.trim() === "") ||
-      (apellido !== undefined && apellido.trim() === "") ||
-      (email !== undefined && email.trim() === "") ||
-      (telefono !== undefined && telefono.trim() === "")
+      (dni !== undefined && dni.trim() === "") ||
+      (email !== undefined && email.trim() === "")
     ) {
       return res.status(400).json({
         mensaje:
-          "Los campos a actualizar no pueden contener valores vacíos",
+          "El DNI y el email no pueden contener valores vacíos",
       });
     }
 
-    // Validar teléfono numérico
+    // Validar el teléfono solamente si fue informado
     if (telefono !== undefined) {
-      const telefonoValido = /^\d{8,15}$/;
       const telefonoLimpio = telefono.trim();
+      const telefonoValido = /^\d{8,15}$/;
 
-      if (!telefonoValido.test(telefonoLimpio)) {
+      if (telefonoLimpio !== "" &&
+        !telefonoValido.test(telefonoLimpio)
+      ) {
         return res.status(400).json({
           mensaje:
             "El teléfono debe contener entre 8 y 15 números",
         });
       }
     }
+    
+    // Validar el DNI solamente si fue informado
+    if (dni !== undefined &&
+      !/^\d{8}$/.test(dni.trim())
+    ) {
+      return res.status(400).json({
+        mensaje:
+          "El DNI debe contener 8 dígitos numéricos",
+      });
+    }
 
     // Actualizar únicamente los campos proporcionados
-    cliente.nombre =
-      nombre !== undefined
-        ? nombre.trim()
-        : cliente.nombre;
-
-    cliente.apellido =
-      apellido !== undefined
-        ? apellido.trim()
-        : cliente.apellido;
-
-    cliente.email =
-      email !== undefined
-        ? email.trim().toLowerCase()
-        : cliente.email;
-
-    cliente.telefono =
-      telefono !== undefined
-        ? telefono.trim()
-        : cliente.telefono;
+    cliente.nombre = nombre !== undefined ? nombre.trim() : cliente.nombre;
+    cliente.apellido = apellido !== undefined  ? apellido.trim()  : cliente.apellido;
+    cliente.dni =  dni !== undefined ? dni.trim() : cliente.dni;
+    cliente.email = email !== undefined ? email.trim().toLowerCase() : cliente.email;
+    cliente.telefono =  telefono !== undefined ? telefono.trim() : cliente.telefono;
 
     await cliente.save();
 
     res.json({
-      mensaje: "Cliente actualizado exitosamente",
-      cliente,
-    });
+      mensaje: "Cliente actualizado exitosamente",cliente,});
   } catch (error) {
     console.error(error);
 
-    res.status(500).json({
-      mensaje: "Error al actualizar el cliente",
-    });
+    res.status(500).json({ mensaje: "Error al actualizar el cliente",});
   }
 };
 
@@ -262,69 +283,24 @@ const eliminarCliente = async (req, res) => {
   }
 };
 
+// MOSTRAR VISTA DE CLIENTES
 const mostrarClientesVista = async (req, res) => {
   try {
 
-    const { buscar } = req.query;
-
-    let clientes;
-
-    if (buscar) {
-
-      clientes = await Cliente.find({
-        $or: [
-          {
-            nombre: {
-              $regex: buscar,
-              $options: "i"
-            }
-          },
-          {
-            apellido: {
-              $regex: buscar,
-              $options: "i"
-            }
-          },
-          {
-            email: {
-              $regex: buscar,
-              $options: "i"
-            }
-          }
-        ]
-      });
-
-    } else {
-
-      clientes = await Cliente.find();
-
-    }
-
+    const clientes = await Cliente.find();
     let mensaje = null;
 
-    if (req.query.creado === "1") {
-      mensaje =
-        "Cliente registrado exitosamente.";
-    }
-
-    if (req.query.actualizado === "1") {
-      mensaje =
-        "Cliente actualizado exitosamente.";
-    }
-      
-        
-    res.render("clientes", {
-      clientes,
-      mensaje
-    });
+    if (req.query.creado === "1") {mensaje = "Cliente registrado exitosamente.";}
+    
+    if (req.query.actualizado === "1") {mensaje = "Cliente actualizado exitosamente.";}
+            
+    res.render("clientes", {clientes,mensaje});
 
   } catch (error) {
 
     console.error(error);
 
-    res.status(500).send(
-      "Error al cargar los clientes"
-    );
+    res.status(500).send("Error al cargar los clientes");
   }
 };
 

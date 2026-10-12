@@ -15,7 +15,12 @@ const usuarioSchema = new mongoose.Schema({
         type: String,
         enum: ["admin", "visitante"],
         required: true
+    },
+    clienteId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Cliente",        
     }
+    
 });
 
 export default mongoose.model("Usuario", usuarioSchema);

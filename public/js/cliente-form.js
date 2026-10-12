@@ -1,92 +1,53 @@
-const formularioCliente =
-  document.getElementById("form-cliente");
+const formularioCliente = document.getElementById("form-cliente");
+const mensajeFormulario = document.getElementById("mensaje-formulario");
 
-const mensajeFormulario =
-  document.getElementById("mensaje-formulario");
-//
+//  Si estamos editando, obtener el ID del cliente de la URL
 const clienteId =
   new URLSearchParams(window.location.search).get("id");
   async function precargarCliente() {
   try {
-
-    const respuesta =
-      await fetch(`/clientes/${clienteId}`);
-
-    const cliente =
-      await respuesta.json();
+    const respuesta = await fetch(`/clientes/${clienteId}`);
+    const cliente = await respuesta.json();
 
     if (!respuesta.ok) {
-      mensajeFormulario.textContent =
-        cliente.mensaje ||
-        "No se pudo cargar el cliente";
-
+      mensajeFormulario.textContent = cliente.mensaje || "No se pudo cargar el cliente";
       return;
     }
 
-    document.querySelector(
-      ".section-title"
-    ).textContent =
-      "Modificar cliente";
-
-    document.getElementById("nombre").value =
-      cliente.nombre;
-
-    document.getElementById("apellido").value =
-      cliente.apellido;
-
-    document.getElementById("email").value =
-      cliente.email;
-
-    document.getElementById("telefono").value =
-      cliente.telefono;
+    document.getElementById("nombre").value = cliente.nombre || "";
+    document.getElementById("apellido").value = cliente.apellido || "";
+    document.getElementById("dni").value = cliente.dni;
+    document.getElementById("email").value = cliente.email;
+    document.getElementById("telefono").value = cliente.telefono || "";
 
   } catch (error) {
 
     console.error(error);
 
-    mensajeFormulario.textContent =
-      "Error al cargar el cliente";
+    mensajeFormulario.textContent = "Error al cargar el cliente";
   }
 }
 
 // Envía el formulario mediante fetch
-formularioCliente.addEventListener(
-  "submit",
-  async (evento) => {
-    evento.preventDefault();
+formularioCliente.addEventListener( "submit",
+  async (evento) => {evento.preventDefault();
 
     const datosCliente = {
-      nombre:
-        document.getElementById("nombre").value.trim(),
-
-      apellido:
-        document.getElementById("apellido").value.trim(),
-
-      email:
-        document.getElementById("email").value.trim(),
-
-      telefono:
-        document.getElementById("telefono").value.trim(),
+      nombre: document.getElementById("nombre").value.trim(),
+      apellido: document.getElementById("apellido").value.trim(),
+      dni: document.getElementById("dni").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      telefono: document.getElementById("telefono").value.trim(),
     };
 
     try {
-      mensajeFormulario.textContent =
-        "Guardando cliente...";
+     
+      const url = clienteId ? `/clientes/${clienteId}` : "/clientes";
+      const metodo = clienteId ? "PUT" : "POST";
 
-      const url = clienteId
-        ? `/clientes/${clienteId}`
-        : "/clientes";
-
-      const metodo = clienteId
-        ? "PUT"
-        : "POST";
-
-      const respuesta = await fetch(url, {
-        method: metodo,
-
+      const respuesta = await fetch(url, {method: metodo,
         headers: {
           "Content-Type": "application/json",
-          Accept: "application/json",
         },
 
         body: JSON.stringify(datosCliente),
@@ -101,16 +62,15 @@ formularioCliente.addEventListener(
         );
       }
 
-      // Vuelve al listado después de guardar
-      window.location.href =clienteId
+      // Vuelve a la vista si es un administrador o al login si es un visitante
+      window.location.href =  clienteId
           ? "/clientes/vista?actualizado=1"
-          : "/clientes/vista?creado=1";
-       
-    } catch (error) {
+          : resultado.redireccion;
+      
+      } catch (error) {
       console.error(error);
 
-      mensajeFormulario.textContent =
-        error.message;
+      mensajeFormulario.textContent = error.message;
     }
   }
 );
@@ -119,3 +79,10 @@ formularioCliente.addEventListener(
 if (clienteId) {
   precargarCliente();
 }
+
+// Limpiar el mensaje de error cuando el usuario hace click en un campo
+const campos =  document.querySelectorAll("#form-cliente input"  );
+campos.forEach((campo) => { campo.addEventListener("click", () => {
+    mensajeFormulario.textContent = "";
+  });
+});

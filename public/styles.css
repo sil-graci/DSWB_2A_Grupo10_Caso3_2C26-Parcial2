@@ -959,6 +959,21 @@ body:has(.inicio)>.topbar {
   min-height: 1.2em;
 }
 
+.mensaje-error-cliente {
+  margin: 0 0 12px;
+  padding: 12px 16px;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  background-color: rgba(254, 226, 226, 0.95);
+  color: #991b1b;
+  font-weight: 600;
+  min-height: 1.2em;
+}
+
+#mensaje-formulario:empty {
+  display: none;
+}
+
 .filtros-eventos {
   display: flex;
   gap: 12px;
