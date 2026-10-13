@@ -143,23 +143,32 @@ El CRUD completo fue probado correctamente utilizando la aplicación y Thunder C
 
 ### Módulo de Eventos (/eventos)
 
-El módulo Eventos fue migrado de **JSON a MongoDB** utilizando **Mongoose**.
+El módulo Eventos fue migrado de **JSON a MongoDB** utilizando **Mongoose**. Cada evento guarda título, descripción, imagen, fecha, hora, sala (`salaId`, referencia a Salas) y estado (`activo`, `lleno` o `finalizado`).
 
-Se adaptaron el modelo y el controller para trabajar con operaciones asincrónicas mediante `async/await`, utilizando `find`, `findById`, `save`, `findByIdAndUpdate` y `findByIdAndDelete`.
+El controller trabaja con `async/await` y usa `find`, `findById`, `findOne`, `create`, `save` y `findByIdAndDelete`. La modificación usa `findById` + `save` para poder controlar conflictos de horario y ejecutar las validaciones del esquema.
 
-También se incorporaron validaciones simples y manejo de errores con `try/catch`.
+**Validaciones y manejo de errores**
+- Campos obligatorios, `salaId` con formato de ObjectId válido y estado dentro de los valores permitidos (400).
+- La sala indicada debe existir (404).
+- No se permite otro evento en la misma sala, fecha y hora (400). El solapamiento parcial de horarios no se controla.
+- Todo con `try/catch`, devolviendo 500 ante errores inesperados.
+- Al consultar los eventos, los que ya pasaron se actualizan a `finalizado`.
+- `GET /eventos/proximos` devuelve los eventos futuros ordenados cronológicamente.
 
-La interfaz utiliza **Fetch API** para realizar búsquedas, altas, modificaciones y bajas sin necesidad de recargar la página.
-
+**Interfaz con Fetch API**
+`public/js/eventos.js` pide eventos y salas en paralelo (`Promise.all`), arma las tarjetas con el nombre de cada sala y permite filtrar próximos y eliminar sin recargar. `public/js/nuevo_evento.js` envía el formulario con POST (alta) o PUT (modificación).
 El CRUD completo fue probado correctamente utilizando la aplicación y **Thunder Client**.
+
+**Permisos**
+Alta, modificación y baja son solo para el rol `admin`. El botón "Comprar entrada" aparece para `admin` y `visitante` en los eventos activos.
 
 **Endpoints principales**
 - GET /eventos
 - GET /eventos/:id
 - GET /eventos/proximos
-- POST /eventos 
-- PUT /eventos/:id 
-- DELETE /eventos/:id 
+- POST /eventos
+- PUT /eventos/:id
+- DELETE /eventos/:id
 
 ```json
 {
@@ -168,10 +177,14 @@ El CRUD completo fue probado correctamente utilizando la aplicación y **Thunder
   "imagen": "/portada.png",
   "fecha": "2026-11-20",
   "hora": "21:00",
-  "salaId": 1,
+  "salaId": "665f1c2e9b1e8a3d4c5b6a78",
   "estado": "activo"
 }
- ```
+```
+
+**Limitaciones conocidas**
+La disponibilidad de entradas por evento depende del módulo Entradas. El precio no está incluido en esta entrega.
+
 
 ### Módulo de Clientes (/clientes)
 
