@@ -1,0 +1,110 @@
+extends layout
+
+block content
+  .section-header.section-header--acciones
+    p.section-label PANEL DE ENTRADAS
+    h2.section-title Mis entradas
+    p.section-description
+      | Consultá las entradas y la información de cada evento.
+
+  if usuario && usuario.rol === "visitante"
+    if entradas && entradas.length
+      .eventos-grid
+        each entrada in entradas
+          - const evento = entrada.eventoId
+          - const cliente = entrada.clienteId
+          - const nombreCliente = cliente ? [cliente.nombre, cliente.apellido].filter(Boolean).join(" ") : "No disponible"
+          article.evento-card.evento-card--foto
+            img.evento-card__fondo(src=evento && evento.imagen ? evento.imagen : "/portada.png" alt="" loading="lazy")
+            .evento-card__header
+              span.evento-card__estado= entrada.estado || "No disponible"
+            .evento-card__body
+              h3.evento-card__titulo= evento ? evento.titulo : "Evento no disponible"
+              .evento-card__datos
+                .dato
+                  span.dato__label Fecha
+                  span.dato__valor= evento && evento.fecha ? evento.fecha : "No disponible"
+                .dato
+                  span.dato__label Hora
+                  span.dato__valor= evento && evento.hora ? evento.hora : "No disponible"
+                .dato
+                  span.dato__label Cliente
+                  span.dato__valor= nombreCliente
+                .dato
+                  span.dato__label Email
+                  span.dato__valor= cliente && cliente.email ? cliente.email : "No disponible"
+    else
+      p.section-description Todavía no compraste ninguna entrada.
+
+  else if usuario && usuario.rol === "admin"
+    .filtros-eventos
+      input#filtroDni(type="search" placeholder="Buscar por DNI del cliente" aria-label="Buscar por DNI del cliente")
+      button#btnTodasEntradas.boton(type="button") Todas las entradas
+      button#btnEntradasActivas.boton(type="button") Eventos activos
+
+    if entradas && entradas.length
+      .eventos-grid#listaEntradas
+        each entrada in entradas
+          - const evento = entrada.eventoId
+          - const cliente = entrada.clienteId
+          - const nombreCliente = cliente ? [cliente.nombre, cliente.apellido].filter(Boolean).join(" ") : "No disponible"
+          article.evento-card.evento-card--foto(
+            data-dni=cliente && cliente.dni ? cliente.dni : "",
+            data-evento-estado=evento ? evento.estado : ""
+          )
+            img.evento-card__fondo(src=evento && evento.imagen ? evento.imagen : "/portada.png" alt="" loading="lazy")
+            .evento-card__header
+              span.evento-card__estado= entrada.estado || "No disponible"
+            .evento-card__body
+              h3.evento-card__titulo= evento ? evento.titulo : "Evento no disponible"
+              .evento-card__datos
+                .dato
+                  span.dato__label Fecha
+                  span.dato__valor= evento && evento.fecha ? evento.fecha : "No disponible"
+                .dato
+                  span.dato__label Hora
+                  span.dato__valor= evento && evento.hora ? evento.hora : "No disponible"
+                .dato
+                  span.dato__label Cliente
+                  span.dato__valor= nombreCliente
+                .dato
+                  span.dato__label DNI
+                  span.dato__valor= cliente && cliente.dni ? cliente.dni : "No disponible"
+                .dato
+                  span.dato__label Email
+                  span.dato__valor= cliente && cliente.email ? cliente.email : "No disponible"
+      p#sinResultados.section-description(style="display: none") No hay entradas que coincidan con esos filtros.
+      script.
+        const filtroDni = document.getElementById("filtroDni");
+        const btnTodas = document.getElementById("btnTodasEntradas");
+        const btnActivas = document.getElementById("btnEntradasActivas");
+        const tarjetas = [...document.querySelectorAll("#listaEntradas .evento-card")];
+        const sinResultados = document.getElementById("sinResultados");
+        let soloEventosActivos = false;
+
+        function filtrarEntradas() {
+          const dniBuscado = filtroDni.value.trim().toLowerCase();
+          let visibles = 0;
+
+          tarjetas.forEach((tarjeta) => {
+            const coincideDni = tarjeta.dataset.dni.toLowerCase().includes(dniBuscado);
+            const coincideEstado = !soloEventosActivos || tarjeta.dataset.eventoEstado === "activo";
+            const mostrar = coincideDni && coincideEstado;
+            tarjeta.style.display = mostrar ? "" : "none";
+            if (mostrar) visibles++;
+          });
+
+          sinResultados.style.display = visibles > 0 ? "none" : "";
+        }
+
+        filtroDni.addEventListener("input", filtrarEntradas);
+        btnTodas.addEventListener("click", () => {
+          soloEventosActivos = false;
+          filtrarEntradas();
+        });
+        btnActivas.addEventListener("click", () => {
+          soloEventosActivos = true;
+          filtrarEntradas();
+        });
+    else
+      p.section-description No hay entradas para mostrar.

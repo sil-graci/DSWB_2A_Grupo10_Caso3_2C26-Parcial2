@@ -18,7 +18,7 @@ html
         nav.menu
           a(class=currentPath === "/" ? "activo" : "" href="/") Inicio
           a(class=currentPath.startsWith("/eventos") ? "activo" : "" href="/eventos/vista") Eventos
-          a(class=currentPath.startsWith("/entradas") ? "activo" : "" href="/entradas/nueva") Entradas
+          a(class=currentPath.startsWith("/entradas") ? "activo" : "" href="/entradas/vista") Entradas
 
           if usuario && usuario.rol === "admin"
             a(class=currentPath.startsWith("/reservas") ? "activo" : "" href="/reservas/vista") Reserva

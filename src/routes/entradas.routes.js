@@ -9,11 +9,13 @@ import {
     actualizarEntrada,
     eliminarEntrada,
     mostrarNuevaEntradaVista,
+    mostrarEntradasVista
 
 } from "../controllers/entradas.controllers.js";
 
 //Rutas para vistas (Pug / HTML)
 router.get("/nueva/:eventoId", mostrarNuevaEntradaVista);
+router.get("/vista", mostrarEntradasVista);
 
 // Rutas de la API REST (JSON)
 router.get("/", obtenerEntradas);         // GET /entradas  

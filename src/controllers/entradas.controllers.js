@@ -197,6 +197,27 @@ const mostrarNuevaEntradaVista = async (req, res) => {
   }
 };
 
+//Mostrar el formulario para ver las entradas
+const mostrarEntradasVista = async (req, res) => {
+  try {
+    const filtro =
+      req.session.usuario.rol === "admin"
+      ? {}
+      : { clienteId: req.session.usuario.clienteId };
+
+    const entradas = await Entrada.find(filtro)
+      .sort({ createdAt: -1 })
+      .populate("eventoId")
+      .populate("clienteId")
+      .lean();
+
+    res.render("entradas", {entradas});
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error al cargar las entradas");
+  }
+}
+
 export {
   obtenerEntradas,
   obtenerEntradaPorId,
@@ -204,4 +225,5 @@ export {
   actualizarEntrada,
   eliminarEntrada,
   mostrarNuevaEntradaVista,
+  mostrarEntradasVista,
 };
