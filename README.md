@@ -47,7 +47,7 @@ DSWB_2A_Grupo10_Caso3_2C26/
 │   │   ├── Entrada.js
 │   │   ├── Evento.js
 │   │   ├── Salas.js
-│   │   └── Usuarios.js
+│   │   └── Usuario.js
 │   ├── routes/
 │   │   ├── auth.routes.js
 │   │   ├── clientes.routes.js
@@ -107,7 +107,7 @@ El servidor quedará a la escucha en: http://localhost:3000
 | Módulo / Sección | Ruta Web | Vista Pug | Descripción |
 | :--- | :--- | :--- | :--- |
 | **Inicio** | `/` | `inicio.pug` | Pantalla principal de bienvenida al sistema |
-| **Login** | | | Pantalla de Login y Registro |
+| **Login** | '/login'| 'login.pug' | Pantalla de Inicio de sesión|
 | **Eventos** | `/eventos/vista` | `eventos.pug` | Grilla de eventos en tarjetas con estados |
 | **Entrada** | | |  |
 | **Nuevo Evento** | `/eventos/nuevo` | `nuevo_evento.pug` | Formulario de alta con selector dinámico de salas |
@@ -118,6 +118,29 @@ El servidor quedará a la escucha en: http://localhost:3000
 
 
 ## Documentación de la API REST (JSON)
+
+### Inicio de sesión y control de acceso
+
+La aplicación utiliza sesiones del servidor para mantener identificado al usuario después de iniciar sesión. En esta entrega no se utiliza JWT.
+
+**Rutas de autenticación**
+- GET `/login`: muestra el formulario de acceso.
+- POST `/login`: verifica las credenciales y crea la sesión.
+- POST `/logout`: destruye la sesión y cierra el acceso.
+
+El sistema busca el correo en MongoDB y compara la contraseña ingresada con la contraseña protegida almacenada, utilizando `bcryptjs`. Si el usuario no existe o la contraseña no coincide, responde con el código 401 y el mensaje “Credenciales inválidas”.
+
+Cuando las credenciales son correctas, se guardan en la sesión el correo, el rol y la referencia al cliente. El usuario administrador es dirigido a `/clientes/vista` y el visitante a `/eventos/vista`.
+
+La sesión tiene una duración de 30 minutos. Al cerrar sesión, se destruye y se elimina la cookie asociada.
+
+**Registro de visitantes**
+El enlace “Regístrate” abre `/clientes/nuevo`. Al enviar el formulario, el sistema valida los datos, guarda el cliente y crea una cuenta asociada con rol `visitante`. La cuenta queda vinculada al cliente mediante `clienteId`.
+
+Actualmente, las cuentas nuevas reciben la contraseña temporal `1234`, que se guarda protegida con `bcryptjs`. Esta contraseña fija es una limitación de seguridad pendiente de mejora.
+
+**Permisos**
+Las rutas protegidas verifican que exista una sesión y que el rol tenga autorización. Si no hay sesión, responden con 401; si el usuario no tiene permiso para esa operación, responden con 403.
 
 ### Módulo de Entradas (/salas)
 
@@ -290,6 +313,9 @@ Las opciones Reservas, Clientes y Salas no se muestran para el visitante.
 * 201 Created: Recurso creado exitosamente (altas).  
 * 400 Bad Request: Datos incompletos, cadenas vacías, ID no numérico o conflicto de horario en la misma sala.  
 * 404 Not Found: El recurso consultado, editado o borrado no existe en el registro.
+* 401 Unauthorized: Credenciales inválidas o solicitud a una ruta protegida sin haber iniciado sesión.
+* 403 Forbidden: El usuario inició sesión, pero su rol no tiene permiso para realizar la operación.
+* 500 Internal Server Error: Error inesperado del servidor al procesar la solicitud.(Respuesta general del servidor)
 
 ## Próximos Pasos 
 * Migrar los módulos restantes para utilizar Fetch API.
