@@ -107,7 +107,7 @@ El servidor quedará a la escucha en: http://localhost:3000
 | Módulo / Sección | Ruta Web | Vista Pug | Descripción |
 | :--- | :--- | :--- | :--- |
 | **Inicio** | `/` | `inicio.pug` | Pantalla principal de bienvenida al sistema |
-| **Login** | '/login'| 'login.pug' | Pantalla de Inicio de sesión|
+| **Login** | `/login`|`login.pug`| Pantalla de Inicio de sesión|
 | **Eventos** | `/eventos/vista` | `eventos.pug` | Grilla de eventos en tarjetas con estados |
 | **Entrada** | | |  |
 | **Nuevo Evento** | `/eventos/nuevo` | `nuevo_evento.pug` | Formulario de alta con selector dinámico de salas |
