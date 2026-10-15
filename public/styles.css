@@ -1017,3 +1017,128 @@ body:has(.inicio) > .topbar {
     transform: none;
   }
 }
+/* Portada: letras y botones más pequeños */
+.portada-header {
+  padding: 22px 7%;
+}
+
+.portada-marca {
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  letter-spacing: -1px;
+}
+
+.inicio-hero h2 {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1.15;
+}
+
+/* Botones Ingresar, Ver eventos, Salir y Conocé más */
+.inicio .inicio-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Ver eventos y Salir en una misma fila */
+.portada-cuenta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.portada-cuenta form {
+  display: flex;
+  margin: 0;
+}
+
+.portada-cuenta .inicio-boton {
+  margin: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 650px) {
+  .portada-header {
+    flex-wrap: wrap;
+    gap: 18px;
+    padding: 20px 6%;
+  }
+
+  .portada-cuenta {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}
+/* Encabezado interno con el estilo de la portada */
+body:not(:has(.inicio)) .topbar {
+  padding: 20px 7%;
+  background: #050505;
+  color: #fff;
+}
+
+.topbar .marca {
+  gap: 0;
+}
+
+/* Ocultar el círculo UC */
+.topbar .logo {
+  display: none;
+}
+
+.topbar .marca h1 {
+  max-width: 150px;
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 900;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.topbar .marca p {
+  display: none;
+}
+
+.topbar .menu {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.topbar .menu a {
+  padding: 9px 14px;
+  border: 1px solid #fff;
+  border-radius: 8px;
+  color: #fff;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.topbar .menu a:hover,
+.topbar .menu a.activo {
+  color: #050505;
+  background: #fff;
+}
+
+@media (max-width: 650px) {
+  .topbar {
+    gap: 18px;
+  }
+
+  .topbar .menu a {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+}
