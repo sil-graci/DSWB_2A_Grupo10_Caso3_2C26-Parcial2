@@ -109,7 +109,8 @@ El servidor quedará a la escucha en: http://localhost:3000
 | **Inicio** | `/` | `inicio.pug` | Pantalla principal de bienvenida al sistema |
 | **Login** | `/login`|`login.pug`| Pantalla de Inicio de sesión|
 | **Eventos** | `/eventos/vista` | `eventos.pug` | Grilla de eventos en tarjetas con estados |
-| **Entrada** | | |  |
+| **Entrada** | `/entradas/vista` | `/entradas.pug`| Directorio de las entradas registradas en el sistema (según el rol) |
+| **Nueva Entrada** | `/entradas/nueva/:eventoId` | `/nueva_entradas.pug`| Formulario para generar una nueva entrada |
 | **Nuevo Evento** | `/eventos/nuevo` | `nuevo_evento.pug` | Formulario de alta con selector dinámico de salas |
 | **Clientes** | `/clientes/vista` | `clientes.pug` | Directorio de clientes registrados |
 | **Nuevo Cliente** | `/clientes/nuevo` | `nuevo_cliente.pug` | Formulario de registro de datos de clientes |
@@ -142,15 +143,15 @@ Actualmente, las cuentas nuevas reciben la contraseña temporal `1234`, que se g
 **Permisos**
 Las rutas protegidas verifican que exista una sesión y que el rol tenga autorización. Si no hay sesión, responden con 401; si el usuario no tiene permiso para esa operación, responden con 403.
 
-### Módulo de Entradas (/salas)
+### Módulo de Entradas (/entradas)
 
-El módulo Entradas fue migrado de **JSON a MongoDB** utilizando **Mongoose**.
+El módulo Entradas fue creado para utilizarse con **MongoDB** y **Mongoose**. El módulo permite comprar entradas para eventos activos y consultar las entradas registradas. Cada entrada queda asociada a un evento y a un cliente, y puede tener estado activa o cancelada. Los administradores pueden ver todas las entradas, mientras que cada cliente ve únicamente las propias. La funcionalidad cuenta con vistas y una API REST para crear, consultar, actualizar y eliminar entradas.
 
 Se adaptaron el modelo y el controller para trabajar con operaciones asincrónicas mediante `async/await`, utilizando `find`, `findById`, `save`, `findByIdAndUpdate` y `findByIdAndDelete`.
 
 También se incorporaron validaciones simples y manejo de errores con `try/catch`.
 
-El CRUD completo fue probado correctamente utilizando la aplicación y Thunder Client.
+El CRUD completo fue probado correctamente utilizando Thunder Client. En próximas iteraciones se añadirá la funcionalidad de eliminar y modificar entradas dentro del programa (desde la web), ya que desde la interfaz del programa todavía no es posible modificar ni eliminar entradas; esas acciones están disponibles mediante la API REST.
 
 **Endpoints principales**
 - GET /entradas  
@@ -161,7 +162,11 @@ El CRUD completo fue probado correctamente utilizando la aplicación y Thunder C
 
 **Ejemplo de registro de entradas**
 ```json
-
+{
+  "eventoId": "6ace7c2e990e444e3cc9e8bf",
+  "clienteId": "6ace7c86990e444e3cc9e8c0",
+  "estado": "activa",
+}
  ```
 
 ### Módulo de Eventos (/eventos)
