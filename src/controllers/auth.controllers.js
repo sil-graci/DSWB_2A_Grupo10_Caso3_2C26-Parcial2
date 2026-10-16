@@ -25,7 +25,7 @@ export const iniciarSesion = async (req, res) => {
     req.session.usuario = {
         email: usuario.email,
         rol: usuario.rol,
-        cliente: usuario.clienteId,
+        clienteId: usuario.clienteId,
     };
 
     if (usuario.rol === "admin") {
