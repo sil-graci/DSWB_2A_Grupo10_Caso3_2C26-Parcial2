@@ -327,6 +327,7 @@ Las opciones Reservas, Clientes y Salas no se muestran para el visitante.
 
 ## Uso de IA
 
-Usamos IA como apoyo para resolver dudas puntuales durante el desarrollo.
+Usamos IA como apoyo para resolver dudas puntuales, revisar alternativas técnicas y mejorar la documentación. Las propuestas fueron revisadas y adaptadas por el equipo antes de incorporarlas.
 
-La consultamos principalmente para temas relacionados con MongoDB, Mongoose, operaciones sobre la base de datos, async/await y manejo de roles.
+La consultamos principalmente para temas relacionados con MongoDB, Mongoose, operaciones sobre la base de datos, async/await, Fetch API, validaciones, sesiones, roles e integración Cliente-Usuario. En particular, la consultamos para incorporar el manejo de sesiones con Express Session, tema presente en el módulo 10 del aula virtual (descargado el 10/10/2026), necesario para implementar el login con roles.
+
