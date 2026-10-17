@@ -387,12 +387,12 @@ El CRUD completo fue probado utilizando la aplicación y Thunder Client.
 
 ## Próximos Pasos
 
-- Migrar los módulos restantes para utilizar Fetch API.
-- Funcionalidad de cancelación de entradas con liberación de vacantes.
-- Incorporación del módulo de Reservas con control de aforo por capacidad máxima de sala.
-- Implementación de consultas de negocio dependientes del módulo de Entradas: entradas vendidas y entradas disponibles por evento.
-- Permitir a los usuarios cambiar su contraseña.
-- Integrar medios de pago.
+- Extender el uso de Fetch API a los módulos de Salas y Entradas.
+- Incorporar nuevas funcionalidades y mejoras en el módulo de Entradas.
+- Implementar consultas de entradas vendidas y disponibles por evento.
+- Evaluar la incorporación de baja lógica en el módulo de Clientes.
+- Migrar el esquema de autenticación basado en sesiones hacia JWT.
+
 
 ## Uso de IA
 
