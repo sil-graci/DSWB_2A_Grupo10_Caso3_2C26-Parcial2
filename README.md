@@ -11,7 +11,7 @@
 
 **Urbana Cult** es una solución backend desarrollada con **Node.js** y **Express** bajo el patrón arquitectónico **Modelo-Vista-Controlador (MVC)**. Su propósito es centralizar la gestión operativa de espacios culturales, organizando los módulos de **Eventos**, **Entradas**, **Clientes** y **Salas**.
 
-Para esta **Segunda Entrega**, el sistema incorpora una **API REST**, persistencia de datos en **MongoDB** mediante **Mongoose**, validaciones de negocio en los controladores y una interfaz web con vistas generadas mediante **Pug**.
+Para esta **Tercera Entrega**, el sistema mantiene la **API REST**, la persistencia de datos en **MongoDB** mediante **Mongoose**, ahora alojada en **MongoDB Atlas**, las validaciones de negocio en los controladores y una interfaz web con vistas generadas mediante **Pug**.
 
 Además, incorpora autenticación con usuarios y roles, manejo de sesiones y operaciones asincrónicas mediante **Fetch API** en los módulos de Clientes y Eventos.
 
@@ -112,7 +112,15 @@ PORT=3000
 MONGO_URI=mongodb://127.0.0.1:27017/urbanacult
 ```
 
-La dirección de MongoDB debe corresponder a la base utilizada en el entorno de ejecución.
+Esa dirección corresponde a una base **MongoDB local** (Compass). Para trabajar con la base compartida en la nube (**MongoDB Atlas**), reemplazar `MONGO_URI` por la cadena de conexión del cluster:
+
+```env
+PORT=3000
+#MONGO_URI=mongodb://127.0.0.1:27017/urbanacult
+MONGO_URI=mongodb+srv://<usuario>:<contraseña>@<cluster>.mongodb.net/urbanacult?retryWrites=true&w=majority
+```
+
+La cadena de conexión con las credenciales reales no se publica en el repositorio: el archivo `.env` está en el `.gitignore` y el equipo la comparte por un canal privado. El nombre de la base (`urbanacult`) va dentro de la URI, antes del `?`.
 
 ### 4. Iniciar el servidor
 
@@ -127,6 +135,18 @@ Abrir en el navegador:
 http://localhost:3000
 
 Si se configura otro puerto, reemplazar `3000` por el valor correspondiente.
+
+## Base de Datos en MongoDB Atlas
+
+En la Tercera Entrega la persistencia pasó de una base MongoDB local a **MongoDB Atlas**, el servicio en la nube de MongoDB, para que todo el equipo trabaje sobre los mismos datos.
+
+- **Cluster:** `UrbanaCult`, plan gratuito M0 (512 MB de almacenamiento), con la base `urbanacult`.
+- **Colecciones:** `salas`, `eventos`, `clientes`, `entradas` y `usuarios`.
+- **Acceso:** un usuario de base de datos con permiso de lectura y escritura, y una lista de acceso de red que permite conexiones desde cualquier IP (`0.0.0.0/0`), solo por tratarse de un trabajo práctico.
+- **Migración de datos:** cada colección se exportó desde MongoDB Compass en formato JSON y se importó en Atlas, respetando el orden salas → eventos → clientes → entradas → usuarios para conservar las referencias.
+- **Cambios en el código:** ninguno. `src/config/db.js` ya leía la variable `MONGO_URI`, así que alcanzó con cambiar el `.env`.
+- **Usuarios iniciales:** al arrancar, la aplicación crea el usuario administrador y el visitante si no existen.
+- **Imágenes:** los archivos se guardan en `public/`. La base solo almacena la ruta.
 
 ## Navegación en el Navegador (Vistas Pug)
 
