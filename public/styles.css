@@ -1017,3 +1017,25 @@ body:has(.inicio) > .topbar {
     transform: none;
   }
 }
+
+/* Alinear Ver eventos y Salir */
+.portada-cuenta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.portada-cuenta form {
+  display: flex;
+  margin: 0;
+}
+
+.portada-cuenta .inicio-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  margin: 0;
+  white-space: nowrap;
+}
