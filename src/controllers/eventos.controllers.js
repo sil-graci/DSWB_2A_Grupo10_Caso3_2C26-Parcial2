@@ -4,18 +4,27 @@ import Salas from "../models/Salas.js";
 
 const estadosValidos = ["activo", "lleno", "finalizado"];
 
-// Actualizar automáticamente los eventos cuya fecha y hora ya pasaron
+// Marca como finalizados los eventos activos cuya fecha y hora ya pasaron.
+// Una sola operación en MongoDB, sin traer los eventos a Node.
 const actualizarEstados = async () => {
-  const ahora = new Date();
-  const activos = await Evento.find({ estado: "activo" });
-
-  for (const evento of activos) {
-    if (new Date(`${evento.fecha}T${evento.hora}`) < ahora) {
-      evento.estado = "finalizado";
-      await evento.save();
-    }
-  }
+  await Evento.updateMany(
+    { estado: "activo", fechaHora: { $lt: new Date() } },
+    { estado: "finalizado" },
+  );
 };
+
+// Actualizar automáticamente los eventos cuya fecha y hora ya pasaron
+// const actualizarEstados = async () => {
+//   const ahora = new Date();
+//   const activos = await Evento.find({ estado: "activo" });
+
+//   for (const evento of activos) {
+//     if (new Date(`${evento.fecha}T${evento.hora}`) < ahora) {
+//       evento.estado = "finalizado";
+//       await evento.save();
+//     }
+//   }
+// };
 
 // GET ALL (API)
 const obtenerEventos = async (req, res) => {
@@ -67,21 +76,13 @@ const obtenerEventosProximos = async (req, res) => {
   try {
     await actualizarEstados();
 
-    const eventos = await Evento.find();
-    const ahora = new Date();
-
-    const proximos = eventos
-      .filter((evento) => {
-        return new Date(`${evento.fecha}T${evento.hora}`) > ahora;
-      })
-      .sort((a, b) => {
-        return (
-          new Date(`${a.fecha}T${a.hora}`) -
-          new Date(`${b.fecha}T${b.hora}`)
-        );
-      });
+    // El filtro y el orden los hace MongoDB
+    const proximos = await Evento.find({
+      fechaHora: { $gt: new Date() },
+    }).sort({ fechaHora: 1 });
 
     res.json(proximos);
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -93,15 +94,8 @@ const obtenerEventosProximos = async (req, res) => {
 // CREATE
 const crearEvento = async (req, res) => {
   try {
-    const {
-      titulo,
-      descripcion,
-      imagen,
-      fecha,
-      hora,
-      salaId,
-      estado,
-    } = req.body ?? {};
+    const { titulo, descripcion, imagen, fecha, hora, salaId, estado } =
+      req.body ?? {};
 
     if (!titulo || !descripcion || !fecha || !hora || !salaId || !estado) {
       return res.status(400).json({
@@ -192,15 +186,8 @@ const actualizarEvento = async (req, res) => {
       });
     }
 
-    const {
-      titulo,
-      descripcion,
-      imagen,
-      fecha,
-      hora,
-      salaId,
-      estado,
-    } = req.body ?? {};
+    const { titulo, descripcion, imagen, fecha, hora, salaId, estado } =
+      req.body ?? {};
 
     const campos = {
       titulo,
@@ -349,9 +336,7 @@ const mostrarEventosVista = async (req, res) => {
     });
 
     const mensaje =
-      req.query.creado === "1"
-        ? "Evento creado exitosamente."
-        : null;
+      req.query.creado === "1" ? "Evento creado exitosamente." : null;
 
     res.render("eventos", {
       eventos,
