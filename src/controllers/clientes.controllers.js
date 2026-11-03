@@ -146,7 +146,7 @@ const crearCliente = async (req, res) => {
       throw error;
     }
     
-    const redireccion = req.session?.usuario?.rol === "admin"
+    const redireccion = req.usuario?.rol === "admin"
         ? "/clientes/vista?creado=1"
         : "/login?registrado=1";
 
