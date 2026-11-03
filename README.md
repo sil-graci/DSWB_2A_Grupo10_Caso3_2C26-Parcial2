@@ -13,7 +13,7 @@
 
 Para esta **Tercera Entrega**, el sistema mantiene la **API REST**, la persistencia de datos en **MongoDB** mediante **Mongoose**, ahora alojada en **MongoDB Atlas**, las validaciones de negocio en los controladores y una interfaz web con vistas generadas mediante **Pug**.
 
-Además, incorpora autenticación con usuarios y roles, manejo de sesiones y operaciones asincrónicas mediante **Fetch API** en los módulos de Clientes y Eventos.
+Además, incorpora autenticación con usuarios y roles, autenticación basada en JWT, middlewares personalizados y operaciones asincrónicas mediante **Fetch API** en los módulos de Clientes y Eventos.
 
 ---
 
@@ -24,7 +24,7 @@ Además, incorpora autenticación con usuarios y roles, manejo de sesiones y ope
 - **Motor de plantillas:** Pug.
 - **Base de datos:** MongoDB.
 - **ODM:** Mongoose.
-- **Sesiones:** express-session.
+- **Autenticación:** jsonwebtoken (JWT).
 - **Protección de contraseñas:** bcryptjs.
 - **Variables de entorno:** dotenv.
 - **Comunicación desde el navegador:** Fetch API.
@@ -54,7 +54,9 @@ DSWB_2A_Grupo10_Caso3_2C26-Parcial2/
 │   │   ├── eventos.controllers.js
 │   │   ├── inicio.controllers.js
 │   │   └── salas.controllers.js
-│   ├── models/
+│   ├── middlewares/
+│   │   └── auth.middleware.js
+|   ├── models/
 │   │   ├── Cliente.js
 │   │   ├── Entrada.js
 │   │   ├── Evento.js
@@ -110,6 +112,7 @@ Crear un archivo `.env` en la raíz del proyecto:
 ```env
 PORT=3000
 MONGO_URI=mongodb://127.0.0.1:27017/urbanacult
+JWT_SECRET=mi-clave-secreta
 ```
 
 Esa dirección corresponde a una base **MongoDB local** (Compass). Para trabajar con la base compartida en la nube (**MongoDB Atlas**), reemplazar `MONGO_URI` por la cadena de conexión del cluster:
@@ -118,6 +121,7 @@ Esa dirección corresponde a una base **MongoDB local** (Compass). Para trabajar
 PORT=3000
 #MONGO_URI=mongodb://127.0.0.1:27017/urbanacult
 MONGO_URI=mongodb+srv://<usuario>:<contraseña>@<cluster>.mongodb.net/urbanacult?retryWrites=true&w=majority
+JWT_SECRET=mi-clave-secreta
 ```
 
 La cadena de conexión con las credenciales reales no se publica en el repositorio: el archivo `.env` está en el `.gitignore` y el equipo la comparte por un canal privado. El nombre de la base (`urbanacult`) va dentro de la URI, antes del `?`.
@@ -167,19 +171,17 @@ En la Tercera Entrega la persistencia pasó de una base MongoDB local a **MongoD
 
 ### Inicio de sesión y control de acceso
 
-La aplicación utiliza sesiones del servidor para mantener identificado al usuario después de iniciar sesión. En esta entrega no se utiliza JWT.
+La aplicación utiliza JSON Web Tokens (JWT) firmados con jsonwebtoken para autenticar al usuario y mantener su identidad mediante una cookie httpOnly (o mediante el encabezado Authorization: Bearer <token>).
 
 **Rutas de autenticación**
 
-- GET `/login`: muestra el formulario de acceso.
-- POST `/login`: verifica las credenciales y crea la sesión.
-- POST `/logout`: destruye la sesión y elimina la cookie asociada.
+GET /login: muestra el formulario de acceso.
+POST /login: valida los datos obligatorios (400), verifica las credenciales (401) y genera el token JWT firmado.
+POST /logout: elimina la cookie token y redirige al inicio.
 
-El sistema busca el correo en MongoDB y compara la contraseña ingresada con el hash almacenado, utilizando `bcryptjs`. Si el usuario no existe o la contraseña no coincide, responde con el código 401 y el mensaje “Credenciales inválidas”.
+El sistema busca el correo en MongoDB y compara la contraseña ingresada con el hash almacenado, utilizando bcryptjs. Si faltan datos responde con 400; si el usuario no existe o la contraseña no coincide, responde con el código 401 y el mensaje “Credenciales inválidas”.
 
-Cuando las credenciales son correctas, se guardan en la sesión el correo, el rol y la referencia al cliente. El usuario administrador es dirigido a `/clientes/vista` y el visitante a `/eventos/vista`.
-
-La sesión tiene una duración de 30 minutos. Al cerrar sesión, se destruye y se elimina la cookie asociada.
+Cuando las credenciales son correctas, se firma un token JWT (con expiración de 30 minutos) que incluye en su payload el correo, el rol y la referencia al cliente (clienteId), guardándolo en la cookie token. El usuario administrador es dirigido a /clientes/vista y el visitante a /eventos/vista.
 
 **Registro de visitantes**
 
@@ -187,9 +189,10 @@ El enlace “Regístrate” abre `/clientes/nuevo`. Al enviar el formulario, el 
 
 Actualmente, las cuentas nuevas reciben la contraseña temporal `1234`, que se guarda protegida con `bcryptjs`. Esta contraseña fija es una limitación de seguridad pendiente de mejora.
 
-**Permisos**
+**Middlewares personalizados y permisos (src/middlewares/auth.middleware.js)**
 
-Las rutas protegidas verifican que exista una sesión y que el rol tenga autorización. Si no hay sesión, responden con 401; si el usuario no tiene permiso para esa operación, responden con 403.
+- autenticarJWT: extrae el token desde la cookie o el encabezado Authorization, verifica su firma con jwt.verify() y adjunta los datos del usuario en req.usuario y res.locals.usuario.
+- verificarRol(...rolesPermitidos): protege las rutas verificando primero la autenticación (req.usuario, devolviendo 401 si no inició sesión) y luego la autorización según el rol (req.usuario.rol, devolviendo 403 si no tiene permisos).
 
 ### Portada y cartelera pública (/)
 
