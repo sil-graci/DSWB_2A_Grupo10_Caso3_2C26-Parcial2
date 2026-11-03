@@ -201,9 +201,9 @@ const mostrarNuevaEntradaVista = async (req, res) => {
 const mostrarEntradasVista = async (req, res) => {
   try {
     const filtro =
-      req.session.usuario.rol === "admin"
+      req.usuario.rol === "admin"
       ? {}
-      : { clienteId: req.session.usuario.clienteId };
+      : { clienteId: req.usuario.clienteId };
 
     const entradas = await Entrada.find(filtro)
       .sort({ createdAt: -1 })
