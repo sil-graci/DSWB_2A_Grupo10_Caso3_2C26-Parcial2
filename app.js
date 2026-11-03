@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import path from "path";
-import session from "express-session";
+import { autenticarJWT, verificarRol } from "./src/middlewares/auth.middleware.js";
 import bcrypt from "bcryptjs";
 import { fileURLToPath } from "url";
 
@@ -64,23 +64,9 @@ const cargarUsuariosIniciales = async () => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(
-  session({
-    secret: "mi-clave-secreta",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      maxAge: 30 * 60 * 1000, // 30 minutos
-    },
-  })
-);
+app.use(autenticarJWT);
 
-// Variables disponibles en las vistas Pug
-app.use((req, res, next) => {
-  res.locals.currentPath = req.path;
-  res.locals.usuario = req.session.usuario || null;
-  next();
-});
+
 
 // Portada pública con carrusel de eventos activos
 app.use("/", inicioRoutes);
@@ -88,24 +74,7 @@ app.use("/", inicioRoutes);
 // Login y cierre de sesión
 app.use("/", authRoutes);
 
-// Verificación de rol: acepta uno o varios roles
-const verificarRol = (...rolesPermitidos) => {
-  return (req, res, next) => {
-    if (!req.session || !req.session.usuario) {
-      return res.status(401).json({
-        mensaje: "No estás logueado",
-      });
-    }
 
-    if (!rolesPermitidos.includes(req.session.usuario.rol)) {
-      return res.status(403).json({
-        mensaje: "No tenés permisos",
-      });
-    }
-
-    next();
-  };
-};
 
 // Eventos: consultas para admin y visitante.
 // Crear, editar y borrar solo para admin.
