@@ -4,6 +4,11 @@ import Salas from "../models/Salas.js";
 
 const estadosValidos = ["activo", "lleno", "finalizado"];
 
+// El precio es opcional; si viene, tiene que ser un número mayor o igual a 0
+const precioInvalido = (precio) =>
+  precio !== undefined &&
+  (typeof precio !== "number" || !Number.isFinite(precio) || precio < 0);
+
 // Marca como finalizados los eventos activos cuya fecha y hora ya pasaron.
 // Una sola operación en MongoDB, sin traer los eventos a Node.
 const actualizarEstados = async () => {
@@ -82,7 +87,6 @@ const obtenerEventosProximos = async (req, res) => {
     }).sort({ fechaHora: 1 });
 
     res.json(proximos);
-    
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -94,7 +98,7 @@ const obtenerEventosProximos = async (req, res) => {
 // CREATE
 const crearEvento = async (req, res) => {
   try {
-    const { titulo, descripcion, imagen, fecha, hora, salaId, estado } =
+    const { titulo, descripcion, imagen, fecha, hora, precio, salaId, estado } =
       req.body ?? {};
 
     if (!titulo || !descripcion || !fecha || !hora || !salaId || !estado) {
@@ -106,6 +110,11 @@ const crearEvento = async (req, res) => {
     if (imagen !== undefined && typeof imagen !== "string") {
       return res.status(400).json({
         mensaje: "La imagen debe ser una ruta de texto",
+      });
+    }
+    if (precioInvalido(precio)) {
+      return res.status(400).json({
+        mensaje: "El precio debe ser un número mayor o igual a 0",
       });
     }
 
@@ -147,6 +156,7 @@ const crearEvento = async (req, res) => {
       imagen: imagen?.trim() || "/portada.png",
       fecha,
       hora,
+      precio: precio ?? 0,
       salaId,
       estado,
     });
@@ -186,7 +196,7 @@ const actualizarEvento = async (req, res) => {
       });
     }
 
-    const { titulo, descripcion, imagen, fecha, hora, salaId, estado } =
+    const { titulo, descripcion, imagen, fecha, hora, precio, salaId, estado } =
       req.body ?? {};
 
     const campos = {
@@ -195,6 +205,7 @@ const actualizarEvento = async (req, res) => {
       imagen,
       fecha,
       hora,
+      precio,
       salaId,
       estado,
     };
@@ -202,7 +213,7 @@ const actualizarEvento = async (req, res) => {
     if (Object.values(campos).every((valor) => valor === undefined)) {
       return res.status(400).json({
         mensaje:
-          "Debe enviar al menos un campo para actualizar (titulo, descripcion, imagen, fecha, hora, salaId o estado)",
+          "Debe enviar al menos un campo para actualizar (titulo, descripcion, imagen, fecha, hora, precio, salaId o estado)",
       });
     }
 
@@ -225,6 +236,12 @@ const actualizarEvento = async (req, res) => {
           mensaje: `El campo ${campo} debe contener texto y no puede estar vacío`,
         });
       }
+    }
+
+    if (precioInvalido(precio)) {
+      return res.status(400).json({
+        mensaje: "El precio debe ser un número mayor o igual a 0",
+      });
     }
 
     if (salaId !== undefined) {
@@ -272,6 +289,7 @@ const actualizarEvento = async (req, res) => {
     evento.hora = nuevaHora;
     evento.salaId = nuevaSalaId;
     evento.estado = estado ?? evento.estado;
+    evento.precio = precio ?? evento.precio;
 
     if (imagen !== undefined) {
       evento.imagen = imagen.trim();
