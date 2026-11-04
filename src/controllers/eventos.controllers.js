@@ -170,6 +170,14 @@ const crearEvento = async (req, res) => {
       evento: nuevoEvento,
     });
   } catch (error) {
+        if (error.name === "ValidationError") {
+      return res.status(400).json({
+        mensaje: Object.values(error.errors)
+          .map((e) => e.message)
+          .join(". "),
+      });
+    }
+
     console.error(error);
     res.status(500).json({
       mensaje: "Error al crear el evento",
@@ -302,6 +310,14 @@ const actualizarEvento = async (req, res) => {
       evento,
     });
   } catch (error) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        mensaje: Object.values(error.errors)
+          .map((e) => e.message)
+          .join(". "),
+      });
+    }
+
     console.error(error);
     res.status(500).json({
       mensaje: "Error al actualizar el evento",
