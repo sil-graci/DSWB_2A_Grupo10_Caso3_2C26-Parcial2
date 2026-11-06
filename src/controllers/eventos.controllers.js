@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Evento from "../models/Evento.js";
 import Salas from "../models/Salas.js";
+import { emitirEvento } from "../sockets/index.js";
 
 const estadosValidos = ["activo", "lleno", "finalizado"];
 
@@ -11,25 +12,20 @@ const precioInvalido = (precio) =>
 
 // Marca como finalizados los eventos activos cuya fecha y hora ya pasaron.
 // Una sola operación en MongoDB, sin traer los eventos a Node.
+// Si cambió alguno, avisa por socket a los clientes conectados.
 const actualizarEstados = async () => {
-  await Evento.updateMany(
+  const resultado = await Evento.updateMany(
     { estado: "activo", fechaHora: { $lt: new Date() } },
     { estado: "finalizado" },
   );
+
+  // Solo avisamos si realmente cambió algún evento
+  if (resultado.modifiedCount > 0) {
+    emitirEvento("eventos:estados-actualizados", {
+      cantidad: resultado.modifiedCount,
+    });
+  }
 };
-
-// Actualizar automáticamente los eventos cuya fecha y hora ya pasaron
-// const actualizarEstados = async () => {
-//   const ahora = new Date();
-//   const activos = await Evento.find({ estado: "activo" });
-
-//   for (const evento of activos) {
-//     if (new Date(`${evento.fecha}T${evento.hora}`) < ahora) {
-//       evento.estado = "finalizado";
-//       await evento.save();
-//     }
-//   }
-// };
 
 // GET ALL (API)
 const obtenerEventos = async (req, res) => {
@@ -161,6 +157,11 @@ const crearEvento = async (req, res) => {
       estado,
     });
 
+    emitirEvento("evento:creado", {
+      id: String(nuevoEvento._id),
+      titulo: nuevoEvento.titulo,
+    });
+
     if (req.headers.accept?.includes("text/html")) {
       return res.redirect("/eventos/vista?creado=1");
     }
@@ -170,7 +171,7 @@ const crearEvento = async (req, res) => {
       evento: nuevoEvento,
     });
   } catch (error) {
-        if (error.name === "ValidationError") {
+    if (error.name === "ValidationError") {
       return res.status(400).json({
         mensaje: Object.values(error.errors)
           .map((e) => e.message)
@@ -305,6 +306,12 @@ const actualizarEvento = async (req, res) => {
 
     await evento.save();
 
+    emitirEvento("evento:actualizado", {
+      id: String(evento._id),
+      titulo: evento.titulo,
+      estado: evento.estado,
+    });
+
     res.json({
       mensaje: "Evento actualizado exitosamente",
       evento,
@@ -343,6 +350,11 @@ const eliminarEvento = async (req, res) => {
         mensaje: "Evento no encontrado",
       });
     }
+
+    emitirEvento("evento:eliminado", {
+      id: String(eliminado._id),
+      titulo: eliminado.titulo,
+    });
 
     res.json({
       mensaje: "Evento eliminado",
