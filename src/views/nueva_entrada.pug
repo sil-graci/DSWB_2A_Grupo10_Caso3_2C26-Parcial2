@@ -10,16 +10,29 @@ block content
   form.formulario-evento(action="/entradas" method="POST")
     input(type="hidden" name="eventoId" value=evento._id)
 
-    .campo
-      label(for="clienteId") Cliente
-      select#clienteId(name="clienteId" required)
-        option(value="" disabled selected) Seleccioná un cliente
-        each cliente in clientes
-          option(value=cliente._id)= `${cliente.nombre} ${cliente.apellido}`
+    if usuario && usuario.rol === "admin"
+      .campo
+        label(for="clienteId") Cliente
+        select#clienteId(name="clienteId" required)
+          option(value="" disabled selected) Seleccioná un cliente
+          each cliente in clientes
+            option(value=cliente._id)= `${cliente.nombre} ${cliente.apellido}`
+    else if usuario && usuario.rol === "visitante" && cliente
+      .campo
+        label(for="clienteNombre") Cliente
+        input#clienteNombre(type="text" value=[cliente.nombre, cliente.apellido].filter(Boolean).join(" ") readonly)
+        input(type="hidden" name="clienteId" value=cliente._id)
 
-    .formulario-evento__acciones
-      a.boton.boton--secundario(href="/eventos/vista") Cancelar
-      button.boton(type="submit" disabled=clientes.length === 0) Comprar entrada
+    if usuario && (usuario.rol === "admin" || (usuario.rol === "visitante" && cliente))
+      .campo
+        label(for="cantidad") Cantidad de entradas
+        input#cantidad(type="number" name="cantidad" min="1" step="1" value="1" required)
 
-    if clientes.length === 0
-      p.section-description No hay clientes registrados para seleccionar.
+      .formulario-evento__acciones
+        a.boton.boton--secundario(href="/eventos/vista") Cancelar
+        button.boton(type="submit" disabled=usuario.rol === "admin" && clientes.length === 0) Comprar entradas
+
+      if usuario.rol === "admin" && clientes.length === 0
+        p.section-description No hay clientes registrados para seleccionar.
+    else if usuario && usuario.rol === "visitante"
+      p.section-description No encontramos un cliente asociado a tu usuario.

@@ -2,8 +2,27 @@ import mongoose from "mongoose";
 import Entrada from "../models/Entrada.js";
 import Evento from "../models/Evento.js";
 import Cliente from "../models/Cliente.js";
+import Sala from "../models/Salas.js";
 
-const estadosValidos = ["activa", "cancelada"];
+const estadosValidos = ["activa", "cancelada", "usada"];
+
+// Marca como usadas las entradas activas de eventos cuya fecha y hora ya pasaron.
+const actualizarEstado = async () => {
+  const ahora = new Date();
+  const eventosPasados = await Evento.find({ fechaHora: { $lt: ahora } })
+    .select("_id")
+    .lean();
+
+  if (eventosPasados.length === 0) return;
+
+  await Entrada.updateMany(
+    {
+      eventoId: { $in: eventosPasados.map((evento) => evento._id) },
+      estado: "activa",
+    },
+    { $set: { estado: "usada" } },
+  );
+};
 
 // GET ALL (API) 
 const obtenerEntradas = async (req, res) => {
@@ -45,6 +64,7 @@ const obtenerEntradaPorId = async (req, res) => {
 const crearEntrada = async (req, res) => {
   try {
     const { eventoId, clienteId, estado } = req.body ?? {};
+    const cantidad = Number(req.body?.cantidad ?? 1);
 
     if (!eventoId || !clienteId) {
       return res.status(400).json({ mensaje: "Faltan datos obligatorios" });
@@ -56,6 +76,10 @@ const crearEntrada = async (req, res) => {
 
     if (estado !== undefined && !estadosValidos.includes(estado)) {
       return res.status(400).json({ mensaje: "El estado de la entrada no es válido" });
+    }
+
+    if (!Number.isSafeInteger(cantidad) || cantidad < 1) {
+      return res.status(400).json({ mensaje: "La cantidad debe ser un entero mayor que cero" });
     }
 
     const [evento, cliente] = await Promise.all([
@@ -71,19 +95,39 @@ const crearEntrada = async (req, res) => {
       return res.status(404).json({ mensaje: "Cliente no encontrado" });
     }
 
-    const entrada = await Entrada.create({
+    const sala = await Sala.findById(evento.salaId);
+
+    if (!sala) {
+      return res.status(404).json({ mensaje: "La sala del evento no fue encontrada" });
+    }
+
+    const entradasActivas = await Entrada.countDocuments({
       eventoId,
-      clienteId,
-      estado: estado ?? "activa",
+      estado: "activa",
     });
+    const disponibles = Math.max(sala.capacidad - entradasActivas, 0);
+
+    if (cantidad > disponibles) {
+      return res.status(400).json({
+        mensaje: `No hay suficientes lugares. Quedan ${disponibles} entrada(s) disponible(s).`,
+      });
+    }
+
+    const entradas = await Entrada.insertMany(
+      Array.from({ length: cantidad }, () => ({
+        eventoId,
+        clienteId,
+        estado: estado ?? "activa",
+      })),
+    );
 
     if (req.headers.accept?.includes("text/html")) {
       return res.redirect("/eventos/vista?comprada=1");
     }
 
     res.status(201).json({
-      mensaje: "Entrada creada",
-      entrada,
+      mensaje: `${cantidad} entrada(s) creada(s)`,
+      entradas,
     });
   } catch (error) {
     res.status(500).json({ mensaje: "Error al crear la entrada" });
@@ -177,10 +221,7 @@ const mostrarNuevaEntradaVista = async (req, res) => {
       return res.status(400).send("El ID del evento no es válido");
     }
 
-    const [evento, clientes] = await Promise.all([
-      Evento.findById(eventoId).lean(),
-      Cliente.find().sort({ apellido: 1, nombre: 1 }).lean(),
-    ]);
+    const evento = await Evento.findById(eventoId).lean();
 
     if (!evento) {
       return res.status(404).send("Evento no encontrado");
@@ -190,7 +231,15 @@ const mostrarNuevaEntradaVista = async (req, res) => {
       return res.status(400).send("Este evento no está disponible para comprar entradas");
     }
 
-    res.render("nueva_entrada", { evento, clientes });
+    const esAdmin = req.usuario.rol === "admin";
+    const [clientes, cliente] = await Promise.all([
+      esAdmin ? Cliente.find().sort({ apellido: 1, nombre: 1 }).lean() : [],
+      !esAdmin && req.usuario.clienteId
+        ? Cliente.findById(req.usuario.clienteId).lean()
+        : null,
+    ]);
+
+    res.render("nueva_entrada", { evento, clientes, cliente });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error al cargar el formulario de compra");
@@ -200,6 +249,8 @@ const mostrarNuevaEntradaVista = async (req, res) => {
 //Mostrar el formulario para ver las entradas
 const mostrarEntradasVista = async (req, res) => {
   try {
+    await actualizarEstado();
+
     const filtro =
       req.usuario.rol === "admin"
       ? {}

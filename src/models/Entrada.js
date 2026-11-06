@@ -14,7 +14,7 @@ const entradaSchema = new mongoose.Schema(
     },
     estado: {
       type: String,
-      enum: ["activa", "cancelada"],
+      enum: ["activa", "cancelada", "usada"],
       default: "activa",
     },
   },
