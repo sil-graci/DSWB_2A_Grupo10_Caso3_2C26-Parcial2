@@ -116,3 +116,6 @@ document
   .getElementById("btnProximos")
   .addEventListener("click", () => cargarEventos("/eventos/proximos"));
 cargarEventos();
+
+// ---- Tiempo real (WebSockets) ----
+const socket = io();
