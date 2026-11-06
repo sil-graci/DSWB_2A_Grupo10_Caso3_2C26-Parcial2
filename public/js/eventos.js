@@ -4,6 +4,17 @@ const esVisitante = listaEventos.dataset.rol === "visitante";
 
 let rutaActual = "/eventos";
 
+// Convierte los caracteres especiales de HTML en texto inofensivo, para que
+// un dato guardado en la base se muestre como texto y nunca se ejecute como código
+function escaparHTML(valor) {
+  return String(valor ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 async function cargarEventos(ruta = rutaActual) {
   rutaActual = ruta;
   try {
@@ -37,21 +48,22 @@ async function cargarEventos(ruta = rutaActual) {
 
       listaEventos.innerHTML += `
       <article class="evento-card evento-card--foto">
-        <img class="evento-card__fondo" src="${evento.imagen || "/portada.png"}" alt="" loading="lazy"
+        <img class="evento-card__fondo" src="${escaparHTML(evento.imagen || "/portada.png")}" alt="" loading="lazy"
           onerror="this.onerror=null;this.src='/portada.png'">
 
         <div class="evento-card__header">
-          <span class="evento-card__estado evento-card__estado--${evento.estado}">${evento.estado}</span>
+          <span class="evento-card__estado evento-card__estado--${escaparHTML(evento.estado)}">${escaparHTML(evento.estado)}</span>
         </div>
 
         <div class="evento-card__body">
-          <h3 class="evento-card__titulo">${evento.titulo}</h3>
-          <p class="evento-card__descripcion">${evento.descripcion}</p>
+          <h3 class="evento-card__titulo">${escaparHTML(evento.titulo)}</h3>
+          <p class="evento-card__descripcion">${escaparHTML(evento.descripcion)}</p>
 
           <div class="evento-card__datos">
-            <div class="dato"><span class="dato__label">Fecha</span><span class="dato__valor">${evento.fecha}</span></div>
-            <div class="dato"><span class="dato__label">Hora</span><span class="dato__valor">${evento.hora}</span></div>
-            <div class="dato"><span class="dato__label">Sala</span><span class="dato__valor">${nombresSalas[evento.salaId] || "Sala eliminada"}</span></div>
+            <div class="dato"><span class="dato__label">Fecha</span><span class="dato__valor">${escaparHTML(evento.fecha)}</span></div>
+            <div class="dato"><span class="dato__label">Hora</span><span class="dato__valor">${escaparHTML(evento.hora)}</span></div>
+            <div class="dato"><span class="dato__label">Precio</span><span class="dato__valor">${evento.precio > 0 ? "$" + Number(evento.precio).toLocaleString("es-AR") : "Gratis"}</span></div>
+            <div class="dato"><span class="dato__label">Sala</span><span class="dato__valor">${escaparHTML(nombresSalas[evento.salaId] || "Sala eliminada")}</span></div>
           </div>
 
           ${
@@ -77,7 +89,7 @@ async function cargarEventos(ruta = rutaActual) {
 
   } catch (error) {
     console.error(error);
-    listaEventos.innerHTML = `<p>No se pudieron cargar los eventos: ${error.message}</p>`;
+    listaEventos.innerHTML = `<p>No se pudieron cargar los eventos: ${escaparHTML(error.message)}</p>`;
   }
 }
 
