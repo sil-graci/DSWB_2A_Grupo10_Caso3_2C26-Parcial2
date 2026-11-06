@@ -45,3 +45,10 @@ export const iniciarSockets = (servidorHttp) => {
 
   return io;
 };
+
+// Envía un mensaje a todos los que están en la sala Eventos.
+// El "?." significa: si io todavía no existe, no hagas nada (así la API REST
+// nunca se rompe por culpa de los sockets).
+export const emitirEvento = (nombre, datos) => {
+  io?.to(SALA_EVENTOS).emit(nombre, datos);
+};
