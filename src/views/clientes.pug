@@ -4,21 +4,28 @@ block content
   .section-header.section-header--acciones
     p.section-label PANEL DE CLIENTES
     h2.section-title Clientes registrados
+
     p.section-description
       | Consultá la información de los clientes registrados.
 
     p#contador-clientes.evento-card__codigo
       | Cargando clientes...
 
-    form#form-busqueda
+    
+    .filtros-eventos
       input#buscar-cliente(
-        type="text"
-        name="buscar"
-        placeholder="Buscar cliente..."
-        style="width:400px; height:42px;"
+        type="search"
+        placeholder="Buscar cliente por nombre, apellido, DNI o email"
+        aria-label="Buscar cliente"
       )
 
-      button.boton(type="submit") Buscar
+      button#btn-activos.boton(
+        type="button"
+      ) Activos
+
+      button#btn-todos.boton(
+        type="button"
+      ) Todos
 
     a.boton.boton--nuevo(href="/clientes/nuevo")
       | + Nuevo Cliente
@@ -30,13 +37,19 @@ block content
       history.replaceState(null, "", "/clientes/vista");
 
       setTimeout(() => {
-        const mensaje = document.getElementById("mensaje-exito");
+        const mensaje =
+          document.getElementById("mensaje-exito");
 
         if (!mensaje) return;
 
-        mensaje.classList.add("mensaje-exito--oculto");
+        mensaje.classList.add(
+          "mensaje-exito--oculto"
+        );
 
-        setTimeout(() => mensaje.remove(), 500);
+        setTimeout(
+          () => mensaje.remove(),
+          500
+        );
       }, 4000);
 
   p#mensaje-clientes

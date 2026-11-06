@@ -1,7 +1,9 @@
 const listaClientes = document.getElementById("lista-clientes");
 const contadorClientes = document.getElementById("contador-clientes");
-const formularioBusqueda = document.getElementById("form-busqueda");
 const campoBusqueda = document.getElementById("buscar-cliente");
+let estadoActual = "activos";
+const botonActivos = document.getElementById("btn-activos");
+const botonTodos =  document.getElementById("btn-todos");
 const mensajeClientes = document.getElementById("mensaje-clientes");
 
 // Genera el HTML de una tarjeta de cliente
@@ -13,11 +15,38 @@ const crearTarjetaCliente = (cliente) => {
   const telefonoCliente = cliente.telefono || "No informado";
   const dniFormateado =  cliente.dni.replace(
     /(\d{2})(\d{3})(\d{3})/,"$1.$2.$3");
+  
+  const acciones = cliente.activo
+    ? `
+        <a
+          class="boton boton-formulario"
+          href="/clientes/nuevo?id=${cliente._id}"
+        >
+          Modificar
+        </a>
+
+        <button
+          class="boton boton--secundario boton-eliminar"
+          type="button"
+          data-id="${cliente._id}"
+        >
+          Dar de baja
+        </button>
+      `
+    : `
+        <button
+          class="boton boton-formulario boton-reactivar"
+          type="button"
+          data-id="${cliente._id}"
+        >
+          Reactivar
+        </button>
+      `;
 
   return `
     <article class="evento-card">
       <div class="evento-card__header">
-        <span class="evento-card__estado">Cliente</span>
+        <span class="evento-card__estado">${cliente.activo ? "Activo" : "Inactivo"}</span>
         <span class="evento-card__codigo">${cliente.email}</span>
       </div>
 
@@ -40,12 +69,9 @@ const crearTarjetaCliente = (cliente) => {
             <span class="dato__valor">${telefonoCliente}</span>
           </div>
           <div style="display:flex; justify-content:center; gap:12px; margin-top:20px;">
-            <a class="boton boton-formulario" href="/clientes/nuevo?id=${cliente._id}"> Modificar </a>
-            <button
-              class="boton boton--secundario boton-eliminar" type="button" data-id="${cliente._id}">Eliminar
-            </button>      
+            ${acciones}
           </div>
-          
+                    
         </div>
       </div>
     </article>
@@ -71,13 +97,18 @@ const mostrarClientes = (clientes) => {
 };
 
 // Obtiene los clientes desde el backend
-const cargarClientes = async (buscar = "") => {
+const cargarClientes = async (buscar = "",estado = "activos") => {
   try {
     mensajeClientes.textContent = "Cargando clientes...";
 
-    const url = buscar.trim()
-      ? `/clientes?buscar=${buscar.trim()}`
-      : "/clientes";
+    let url = "/clientes";
+
+    if (estado === "todos") {url += "?estado=todos";}
+
+    if (buscar.trim()) {const separador = estado === "todos" ? "&" : "?";
+
+      url +=`${separador}buscar=${buscar.trim()}`;}
+
 
     const respuesta = await fetch(url);
 
@@ -99,11 +130,11 @@ const cargarClientes = async (buscar = "") => {
   }
 };
 
-// Elimina físicamente un cliente
+// Da de baja lógicamente un cliente
 const eliminarCliente = async (id) => {
-  if (!confirm("¿Seguro que querés eliminar este cliente?")) return;
+  if (!confirm("¿Seguro que querés dar de baja este cliente?")) return;
   try {
-    mensajeClientes.textContent = "Eliminando cliente...";
+    mensajeClientes.textContent = "Dando de baja al cliente...";
 
     const respuesta = await fetch(`/clientes/${id}`, { method: "DELETE" });
     const resultado = await respuesta.json();
@@ -117,27 +148,94 @@ const eliminarCliente = async (id) => {
     mensajeClientes.textContent = resultado.mensaje;
 
     // Actualiza las tarjetas sin recargar la página
-    await cargarClientes(campoBusqueda.value);
+    await actualizarListado();
+
   } catch (error) {
     console.error(error);
     mensajeClientes.textContent = error.message;
   }
 };
 
-// Detecta clics en los botones Eliminar
+
+// Reactiva un cliente
+const reactivarCliente = async (id) => {
+  try {
+    mensajeClientes.textContent =
+      "Reactivando cliente...";
+
+    const respuesta = await fetch(
+      `/clientes/${id}/reactivar`,
+      {
+        method: "PATCH",
+      }
+    );
+
+    const resultado =
+      await respuesta.json();
+
+    if (!respuesta.ok) {
+      throw new Error(
+        resultado.mensaje ||
+        "No se pudo reactivar el cliente"
+      );
+    }
+
+    mensajeClientes.textContent =
+      resultado.mensaje;
+
+    await actualizarListado();
+
+  } catch (error) {
+    console.error(error);
+
+    mensajeClientes.textContent =
+      error.message;
+  }
+};
+
+// Detecta clics en Dar de baja y Reactivar
 listaClientes.addEventListener( "click",(evento) => {
     const botonEliminar = evento.target.closest(".boton-eliminar");
     if (botonEliminar) {eliminarCliente(botonEliminar.dataset.id);}
+
+    const botonReactivar =  evento.target.closest(".boton-reactivar");
+
+    if (botonReactivar) {reactivarCliente(botonReactivar.dataset.id);}
   }
 );
 
-// Busca clientes sin recargar la página
-formularioBusqueda.addEventListener(
-  "submit",
-  (evento) => {evento.preventDefault();
-    cargarClientes(campoBusqueda.value);
-  }
+
+// Actualiza el listado de clientes según el estado y la búsqueda
+const actualizarListado = () => {
+  return cargarClientes(
+    campoBusqueda.value,
+    estadoActual
+  );
+};
+
+// Cambia el filtro por estado 
+const cambiarEstado = (estado) => {
+  estadoActual = estado;
+  actualizarListado();
+};
+
+// Filtra clientes activos
+botonActivos.addEventListener(
+  "click",
+  () => cambiarEstado("activos")
 );
 
-// Carga inicialmente todos los clientes
+// Muestra todos los clientes
+botonTodos.addEventListener(
+  "click",
+  () => cambiarEstado("todos")
+);
+
+// Filtra mientras el usuario escribe
+campoBusqueda.addEventListener(
+  "input",
+  actualizarListado
+);
+
+// Carga inicialmente los clientes activos
 cargarClientes();

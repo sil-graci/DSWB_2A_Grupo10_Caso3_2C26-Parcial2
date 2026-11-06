@@ -8,6 +8,7 @@ import {
     crearCliente,
     actualizarCliente,
     eliminarCliente,
+    reactivarCliente,
     mostrarClientesVista,
     mostrarNuevoClienteVista,
 } from "../controllers/clientes.controllers.js";
@@ -21,6 +22,7 @@ router.get("/", obtenerClientes);         // GET /clientes
 router.get("/:id", obtenerClientePorId);  // GET /clientes/:id
 router.post("/", crearCliente);           // POST /clientes
 router.put("/:id", actualizarCliente);    // PUT /clientes/:id
+router.patch("/:id/reactivar",reactivarCliente); // PATCH /clientes/:id/reactivar
 router.delete("/:id", eliminarCliente);   // DELETE /clientes/:id
 
 

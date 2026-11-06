@@ -49,6 +49,10 @@ const clienteSchema = new mongoose.Schema(
           "El teléfono debe contener entre 8 y 15 números",
       },
     },  
+    activo: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

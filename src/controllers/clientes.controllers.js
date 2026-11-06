@@ -3,30 +3,36 @@ import bcrypt from "bcryptjs";
 import Cliente from "../models/Cliente.js";
 import Usuario from "../models/Usuario.js";
 
+
 // GET ALL
 const obtenerClientes = async (req, res) => {
   try {
-    const { buscar } = req.query;
+    const { buscar, estado } = req.query;
 
-    const filtro = buscar
-      ? {
-          $or: [
-            {nombre: {$regex: buscar, $options: "i", },},
-            {apellido: {$regex: buscar, $options: "i", },},
-            {dni: {$regex: buscar, $options: "i", },},
-            {email: {$regex: buscar, $options: "i", },},     
-          ],
-        }
-      : {};
+    const filtro = {};
+
+    // Por defecto trae solamente clientes activos
+    if (estado !== "todos") {filtro.activo = true;}
+
+    // Búsqueda por nombre, apellido, DNI o email
+    if (buscar) {
+      filtro.$or = [
+         {nombre: {$regex: buscar, $options: "i", },},
+         {apellido: {$regex: buscar, $options: "i", },},
+         {dni: {$regex: buscar, $options: "i", },},
+         {email: {$regex: buscar, $options: "i", },},       
+      ];
+    }
 
     const clientes = await Cliente.find(filtro);
 
     res.json(clientes);
+
   } catch (error) {
     console.error(error);
 
     res.status(500).json({
-      mensaje: "Error al obtener los clientes",
+      mensaje:"Error al obtener los clientes",
     });
   }
 };
@@ -263,24 +269,80 @@ const actualizarCliente = async (req, res) => {
   }
 };
 
-// DELETE
+// SE IMPLEMENTÓ BAJA LÓGICA PARA MANTENER LA INTEGRIDAD DE LOS DATOS Y EVITAR ELIMINACIÓN FÍSICA
 const eliminarCliente = async (req, res) => {
   try {
     const { id } = req.params;
+
     if (!mongoose.isValidObjectId(id)) {
-      return res.status(400).json({mensaje: "El ID proporcionado no es válido", }); }
+      return res.status(400).json({
+        mensaje: "El ID proporcionado no es válido",
+      });
+    }
 
     const cliente = await Cliente.findById(id);
-    if (!cliente) {return res.status(404).json({mensaje: "Cliente no encontrado", });  }
 
-    await Usuario.findOneAndDelete({clienteId: id, });
-    await Cliente.findByIdAndDelete(id);
+    if (!cliente) {
+      return res.status(404).json({
+        mensaje: "Cliente no encontrado",
+      });
+    }
 
-    res.json({mensaje: "Cliente eliminado exitosamente", });
+    cliente.activo = false;
+
+    await cliente.save();
+
+    res.json({
+      mensaje: "Cliente dado de baja exitosamente",
+    });
+
   } catch (error) {
     console.error(error);
 
-    res.status(500).json({mensaje: "Error al eliminar el cliente",  });
+    res.status(500).json({
+      mensaje: "Error al dar de baja el cliente",
+    });
+  }
+};
+
+
+// REACTIVAR CLIENTE
+const reactivarCliente = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({
+        mensaje:
+          "El ID proporcionado no es válido",
+      });
+    }
+
+    const cliente = await Cliente.findById(id);
+
+    if (!cliente) {
+      return res.status(404).json({
+        mensaje:
+          "Cliente no encontrado",
+      });
+    }
+
+    cliente.activo = true;
+
+    await cliente.save();
+
+    res.json({
+      mensaje:
+        "Cliente reactivado exitosamente",
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      mensaje:
+        "Error al reactivar el cliente",
+    });
   }
 };
 
@@ -318,6 +380,7 @@ export {
   crearCliente,
   actualizarCliente,
   eliminarCliente,
+  reactivarCliente,
   mostrarClientesVista,
   mostrarNuevoClienteVista,
 };
