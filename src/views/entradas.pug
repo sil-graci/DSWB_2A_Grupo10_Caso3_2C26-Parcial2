@@ -33,6 +33,7 @@ block content
                 .dato
                   span.dato__label Email
                   span.dato__valor= cliente && cliente.email ? cliente.email : "No disponible"
+              button.boton.boton--secundario.boton-eliminar-entrada(type="button" data-entrada-id=entrada._id) Eliminar entrada
     else
       p.section-description Todavía no compraste ninguna entrada.
 
@@ -73,6 +74,7 @@ block content
                 .dato
                   span.dato__label Email
                   span.dato__valor= cliente && cliente.email ? cliente.email : "No disponible"
+              button.boton.boton--secundario.boton-eliminar-entrada(type="button" data-entrada-id=entrada._id) Eliminar entrada
       p#sinResultados.section-description(style="display: none") No hay entradas que coincidan con esos filtros.
       script.
         const filtroDni = document.getElementById("filtroDni");
@@ -108,3 +110,28 @@ block content
         });
     else
       p.section-description No hay entradas para mostrar.
+
+  script.
+    document.addEventListener("click", async (event) => {
+      const boton = event.target.closest(".boton-eliminar-entrada");
+      if (!boton) return;
+
+      const confirmado = confirm("¿Seguro que querés eliminar esta entrada?");
+      if (!confirmado) return;
+
+      try {
+        const respuesta = await fetch(`/entradas/${boton.dataset.entradaId}`, {
+          method: "DELETE",
+        });
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+          alert(resultado.mensaje || "No se pudo eliminar la entrada.");
+          return;
+        }
+
+        window.location.reload();
+      } catch (error) {
+        alert("Ocurrió un error al eliminar la entrada.");
+      }
+    });

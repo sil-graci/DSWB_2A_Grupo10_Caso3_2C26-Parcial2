@@ -852,6 +852,10 @@ body:has(.inicio) > .topbar {
   color: #fff;
 }
 
+.boton-eliminar-entrada {
+  margin-top: 16px;
+}
+
 /* Estados de los eventos */
 .evento-card--foto .evento-card__estado--activo {
   color: #bbf7d0;
