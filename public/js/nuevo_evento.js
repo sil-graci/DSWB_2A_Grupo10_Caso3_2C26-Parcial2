@@ -18,6 +18,7 @@ async function precargarEvento() {
     document.getElementById("descripcion").value = evento.descripcion;
     document.getElementById("fecha").value = evento.fecha;
     document.getElementById("hora").value = evento.hora;
+    document.getElementById("precio").value = evento.precio ?? 0;
     document.getElementById("salaId").value = evento.salaId;
     document.getElementById("estado").value = evento.estado;
   } catch (error) {
@@ -35,6 +36,7 @@ form.addEventListener("submit", async (e) => {
     descripcion: document.getElementById("descripcion").value,
     fecha: document.getElementById("fecha").value,
     hora: document.getElementById("hora").value,
+    precio: Number(document.getElementById("precio").value),
     salaId: document.getElementById("salaId").value,
     estado: document.getElementById("estado").value,
   };
