@@ -1072,3 +1072,31 @@ body:has(.inicio) > .topbar {
 .aviso-tiempo-real--oculto {
   opacity: 0;
 }
+
+/* Contador de conexiones activas */
+.conectados {
+  margin-left: auto;
+  align-self: center;
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  color: #fff;
+  background: rgba(64, 36, 53, 0.9);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Puntito verde que indica "en línea" */
+.conectados::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: #4ade80;
+}
+
+/* Mientras no llegó el primer dato, no se muestra una cápsula vacía */
+.conectados:empty {
+  display: none;
+}

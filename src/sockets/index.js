@@ -34,14 +34,22 @@ export const iniciarSockets = (servidorHttp) => {
     }
   });
 
+   // Notifica a todos los usuarios conectados, sin distinguir sala (io.emit)
+  const emitirConectados = () => {
+    io.emit("usuarios:conectados", { cantidad: io.of("/").sockets.size });
+  };
+
   io.on("connection", (socket) => {
     socket.join(SALA_EVENTOS);
     console.log(`Socket conectado: ${socket.id}`);
+    emitirConectados();
 
     socket.on("disconnect", () => {
       console.log(`Socket desconectado: ${socket.id}`);
+      emitirConectados();
     });
   });
+
 
   return io;
 };

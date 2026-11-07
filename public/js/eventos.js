@@ -86,7 +86,6 @@ async function cargarEventos(ruta = rutaActual) {
         </div>
       </article>`;
     });
-
   } catch (error) {
     console.error(error);
     listaEventos.innerHTML = `<p>No se pudieron cargar los eventos: ${escaparHTML(error.message)}</p>`;
@@ -127,7 +126,7 @@ function mostrarAviso(texto) {
   aviso.textContent = texto; // textContent evita que se interprete HTML (seguro)
   document.body.appendChild(aviso);
   setTimeout(() => aviso.classList.add("aviso-tiempo-real--oculto"), 3500);
-  setTimeout(() => aviso.remove(), 4000);
+  setTimeout(() => aviso.remove(), 5000);
 }
 
 // Mostrar el aviso y volver a pedir la lista de eventos.
@@ -154,7 +153,14 @@ socket.on("eventos:estados-actualizados", () => {
   reaccionar("Algunos eventos pasaron a finalizado");
 });
 
+// Notifica a todos los clientes conectados (broadcast con io.emit)
+socket.on("usuarios:conectados", ({ cantidad }) => {
+  document.getElementById("conectados").textContent =
+    `${cantidad} ${cantidad === 1 ? "conexión activa" : "conexiones activas"}`;
+});
+
 // Si el servidor rechaza la conexión, lo dejamos registrado en consola
 socket.on("connect_error", (error) => {
   console.warn("No se pudo abrir el canal en tiempo real:", error.message);
 });
+
