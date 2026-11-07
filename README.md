@@ -250,11 +250,13 @@ Las opciones Reservas, Clientes y Salas no se muestran para el visitante. La imp
 
 ### Módulo de Entradas (/entradas)
 
-El módulo Entradas fue creado para utilizarse con **MongoDB** y **Mongoose**. El módulo permite comprar entradas para eventos activos y consultar las entradas registradas. Cada entrada queda asociada a un evento y a un cliente, y puede tener estado activa o cancelada. Los administradores pueden ver todas las entradas, mientras que cada cliente ve únicamente las propias. La funcionalidad cuenta con vistas y una API REST para crear, consultar, actualizar y eliminar entradas.
+El módulo Entradas fue creado para utilizarse con **MongoDB** y **Mongoose**. El módulo permite comprar entradas para eventos activos y consultar las entradas registradas. Cada entrada queda asociada a un evento y a un cliente, y puede tener estado **activa**, **cancelada** o **usada**. Los administradores pueden ver todas las entradas, mientras que cada cliente ve únicamente las propias. La funcionalidad cuenta con vistas y una API REST para crear, consultar, actualizar y eliminar entradas.
 
 Se adaptaron el modelo y el controlador para trabajar con operaciones asincrónicas mediante `async/await`, utilizando `find`, `findById`, `save`, `findByIdAndUpdate` y `findByIdAndDelete`.
 
 También se incorporaron validaciones simples y manejo de errores con `try/catch`.
+
+Como regla de negocio, la compra y asignación de entradas solo puede realizarse a clientes activos. En el caso del administrador, el formulario de compra muestra únicamente clientes con estado activo. Además, el backend valida el estado del cliente antes de crear o reasignar una entrada, evitando que la restricción dependa únicamente de la interfaz.
 
 El CRUD completo fue probado correctamente utilizando Thunder Client. En próximas iteraciones se añadirá la funcionalidad de eliminar y modificar entradas dentro del programa (desde la web), ya que desde la interfaz del programa todavía no es posible modificar ni eliminar entradas; esas acciones están disponibles mediante la API REST.
 
