@@ -95,6 +95,10 @@ const crearEntrada = async (req, res) => {
       return res.status(404).json({ mensaje: "Cliente no encontrado" });
     }
 
+    if (!cliente.activo) {
+      return res.status(400).json({ mensaje: "No se puede asignar una entrada a un cliente inactivo" });
+    }
+    
     const sala = await Sala.findById(evento.salaId);
 
     if (!sala) {
@@ -160,11 +164,25 @@ const actualizarEntrada = async (req, res) => {
 
     if (clienteId !== undefined) {
       if (!mongoose.isValidObjectId(clienteId)) {
-        return res.status(400).json({ mensaje: "El ID del cliente no es válido" });
+        return res.status(400).json({
+          mensaje: "El ID del cliente no es válido"
+        });
       }
 
-      if (!(await Cliente.findById(clienteId))) {
-        return res.status(404).json({ mensaje: "Cliente no encontrado" });
+      const cliente =
+        await Cliente.findById(clienteId);
+
+      if (!cliente) {
+        return res.status(404).json({
+          mensaje: "Cliente no encontrado"
+        });
+      }
+
+      if (!cliente.activo) {
+        return res.status(400).json({
+          mensaje:
+            "No se puede asignar una entrada a un cliente inactivo",
+        });
       }
     }
 
@@ -233,7 +251,7 @@ const mostrarNuevaEntradaVista = async (req, res) => {
 
     const esAdmin = req.usuario.rol === "admin";
     const [clientes, cliente] = await Promise.all([
-      esAdmin ? Cliente.find().sort({ apellido: 1, nombre: 1 }).lean() : [],
+      esAdmin ? Cliente.find({activo: true,}).sort({ apellido: 1, nombre: 1 }).lean() : [],
       !esAdmin && req.usuario.clienteId
         ? Cliente.findById(req.usuario.clienteId).lean()
         : null,
