@@ -119,3 +119,42 @@ cargarEventos();
 
 // ---- Tiempo real (WebSockets) ----
 const socket = io();
+
+// Muestra un cartelito temporal en pantalla
+function mostrarAviso(texto) {
+  const aviso = document.createElement("div");
+  aviso.className = "aviso-tiempo-real";
+  aviso.textContent = texto; // textContent evita que se interprete HTML (seguro)
+  document.body.appendChild(aviso);
+  setTimeout(() => aviso.classList.add("aviso-tiempo-real--oculto"), 3500);
+  setTimeout(() => aviso.remove(), 4000);
+}
+
+// Mostrar el aviso y volver a pedir la lista de eventos.
+// cargarEventos() sin parámetros mantiene el filtro activo (Todos / Próximos).
+function reaccionar(textoAviso) {
+  mostrarAviso(textoAviso);
+  cargarEventos();
+}
+
+// socket.on("nombre", función): se ejecuta cuando el servidor emite ese nombre
+socket.on("evento:creado", (datos) => {
+  reaccionar(`Nuevo evento: ${datos.titulo}`);
+});
+
+socket.on("evento:actualizado", (datos) => {
+  reaccionar(`Evento actualizado: ${datos.titulo}`);
+});
+
+socket.on("evento:eliminado", (datos) => {
+  reaccionar(`Evento eliminado: ${datos.titulo}`);
+});
+
+socket.on("eventos:estados-actualizados", () => {
+  reaccionar("Algunos eventos pasaron a finalizado");
+});
+
+// Si el servidor rechaza la conexión, lo dejamos registrado en consola
+socket.on("connect_error", (error) => {
+  console.warn("No se pudo abrir el canal en tiempo real:", error.message);
+});
