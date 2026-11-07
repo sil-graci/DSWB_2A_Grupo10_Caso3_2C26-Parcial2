@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import Cliente from "../models/Cliente.js";
 import Usuario from "../models/Usuario.js";
+import Entrada from "../models/Entrada.js";
 
 
 // GET ALL
@@ -285,6 +286,20 @@ const eliminarCliente = async (req, res) => {
     if (!cliente) {
       return res.status(404).json({
         mensaje: "Cliente no encontrado",
+      });
+    }
+
+    // Verificar si tiene entradas activas
+    const entradaActiva =
+      await Entrada.findOne({
+        clienteId: id,
+        estado: "activa",
+      });
+
+    if (entradaActiva) {
+      return res.status(400).json({
+        mensaje:
+          "No se puede dar de baja al cliente porque tiene entradas activas",
       });
     }
 

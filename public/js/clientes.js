@@ -150,9 +150,23 @@ const eliminarCliente = async (id) => {
     // Actualiza las tarjetas sin recargar la página
     await actualizarListado();
 
-  } catch (error) {
+    } catch (error) {
     console.error(error);
-    mensajeClientes.textContent = error.message;
+
+    mensajeClientes.textContent =
+      error.message;
+
+    mensajeClientes.classList.add(
+      "mensaje-aviso"
+    );
+
+    setTimeout(() => {
+      mensajeClientes.textContent = "";
+
+      mensajeClientes.classList.remove(
+        "mensaje-aviso"
+      );
+    }, 4000);
   }
 };
 
@@ -184,6 +198,16 @@ const reactivarCliente = async (id) => {
       resultado.mensaje;
 
     await actualizarListado();
+    mensajeClientes.textContent = "Cliente reactivado exitosamente.";
+
+    mensajeClientes.classList.add( "mensaje-exito"    );
+
+    setTimeout(() => {
+      mensajeClientes.textContent = "";
+      mensajeClientes.classList.remove(
+        "mensaje-exito"
+      );
+    }, 4000);
 
   } catch (error) {
     console.error(error);

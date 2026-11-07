@@ -41,7 +41,8 @@ DSWB_2A_Grupo10_Caso3_2C26-Parcial2/
 │   │   ├── cliente-form.js
 │   │   ├── clientes.js
 │   │   ├── eventos.js
-│   │   └── nuevo_evento.js
+│   │   ├── nuevo_evento.js
+│   │   └── salas.js
 │   ├── styles.css
 │   └── imágenes utilizadas en la aplicación
 ├── src/
@@ -335,29 +336,35 @@ La disponibilidad de entradas por evento depende del módulo Entradas. El precio
 
 ### Módulo de Clientes (/clientes)
 
-El módulo Clientes fue migrado de **JSON a MongoDB** utilizando **Mongoose**.
+El módulo Clientes utiliza **MongoDB** y **Mongoose** para la persistencia de datos.
 
-Se adaptaron el modelo y el controlador para trabajar con operaciones asincrónicas mediante `async/await`, utilizando `find`, `findById`, `save`, `findByIdAndUpdate` y `findByIdAndDelete`.
+Se adaptaron el modelo y el controlador para trabajar con operaciones asincrónicas mediante async/await y se incorporaron validaciones para el DNI, el correo electrónico y el teléfono, verificando formato, obligatoriedad y registros duplicados.
 
-Se incorporaron validaciones para el DNI y el correo electrónico, verificando formato, obligatoriedad y evitando registros duplicados.
+Al registrar un cliente, el sistema crea automáticamente un usuario asociado con rol visitante, contraseña temporal protegida mediante bcryptjs y vinculación mediante clienteId.
 
-También se implementó la creación automática de usuarios con rol `visitante` al registrar un cliente, generando una contraseña temporal y vinculando ambos registros mediante `clienteId`.
+La modificación del correo electrónico de un cliente actualiza también el correo del usuario asociado, manteniendo la consistencia entre ambas colecciones.
 
-La modificación del correo electrónico de un cliente actualiza automáticamente el correo del usuario asociado, manteniendo la consistencia entre ambas colecciones.
+Se incorporó la **baja lógica de clientes** mediante el campo activo. Los clientes nuevos se registran como activos y, al realizar una baja, el documento permanece almacenado en MongoDB con activo en false, conservando su identificador y las relaciones existentes.
 
-Al eliminar un cliente, también se elimina el usuario asociado para evitar registros huérfanos.
+También se implementó la **reactivación de clientes**, permitiendo cambiar nuevamente su estado a activo sin recrear el documento ni modificar sus relaciones.
 
-La interfaz utiliza **Fetch API** para realizar búsquedas, altas, modificaciones y bajas sin necesidad de recargar la página.
+Como regla de negocio, un cliente que tenga **entradas activas asociadas no puede darse de baja**. En ese caso, el sistema rechaza la operación e informa al administrador mediante un mensaje en la interfaz.
 
-El CRUD completo fue probado utilizando la aplicación y **Thunder Client**.
+La vista permite consultar solamente clientes activos o visualizar todos los clientes mediante los filtros **Activos** y **Todos**. Los clientes inactivos se identifican visualmente y disponen de la opción **Reactivar**.
+
+La búsqueda permite filtrar dinámicamente por nombre, apellido, DNI o email mientras el usuario escribe.
+
+La interfaz utiliza **Fetch API** para realizar búsquedas, altas, modificaciones, bajas lógicas y reactivaciones sin necesidad de recargar completamente la página.
 
 **Endpoints principales**
 
-- GET `/clientes`.
-- GET `/clientes/:id`.
-- POST `/clientes`.
-- PUT `/clientes/:id`.
-- DELETE `/clientes/:id`.
+- GET /clientes: obtiene clientes activos por defecto y admite filtros de búsqueda y estado.
+- GET /clientes/:id: obtiene un cliente por su identificador.
+- POST /clientes: registra un cliente y crea su usuario visitante asociado.
+- PUT /clientes/:id: modifica los datos del cliente y sincroniza el email del usuario.
+- DELETE /clientes/:id: realiza la baja lógica del cliente si no posee entradas activas.
+- PATCH /clientes/:id/reactivar: reactiva un cliente dado de baja.
+
 
 **Ejemplo de registro de cliente**
 
@@ -367,7 +374,8 @@ El CRUD completo fue probado utilizando la aplicación y **Thunder Client**.
   "apellido": "Fernández",
   "dni": "12345678",
   "email": "lucia@test.com",
-  "telefono": "1165432189"
+  "telefono": "1165432189",
+  "activo": true
 }
 ```
 
@@ -410,18 +418,17 @@ El CRUD completo fue probado utilizando la aplicación y Thunder Client.
 
 ## Próximos Pasos
 
-- Extender el uso de Fetch API a los módulos de Salas y Entradas.
+- Extender el uso de Fetch API al Entradas.
 - Incorporar nuevas funcionalidades y mejoras en el módulo de Entradas.
 - Implementar consultas de entradas vendidas y disponibles por evento.
-- Evaluar la incorporación de baja lógica en el módulo de Clientes.
-- Migrar el esquema de autenticación basado en sesiones hacia JWT.
 
 
 ## Uso de IA
 
 Usamos IA como apoyo para resolver dudas puntuales, revisar alternativas técnicas y mejorar la documentación. Las propuestas fueron revisadas y adaptadas por el equipo antes de incorporarlas.
 
-La consultamos principalmente para temas relacionados con MongoDB, Mongoose, operaciones sobre la base de datos, `async/await`, Fetch API, validaciones, sesiones, roles e integración Cliente-Usuario.
+
+La consultamos principalmente para temas relacionados con MongoDB, Mongoose, MongoDB Atlas, operaciones sobre la base de datos, `async/await`, Fetch API, validaciones, JWT, roles, middlewares e integración entre Clientes, Usuarios y Entradas.
 
 En particular, la consultamos para incorporar el manejo de sesiones con Express Session, tema presente en el módulo 10 del aula virtual (descargado el 10/10/2026), necesario para implementar el login con roles.
 
