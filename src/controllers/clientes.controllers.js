@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import Cliente from "../models/Cliente.js";
 import Usuario from "../models/Usuario.js";
 import Entrada from "../models/Entrada.js";
+import {enviarBienvenida,} from "../services/email.service.js";
 
 
 // GET ALL
@@ -135,6 +136,7 @@ const crearCliente = async (req, res) => {
       telefono: telLimpio,
     });
 
+    // Crear usuario
     try {
       const passwordHash = await bcrypt.hash("1234", 10);
 
@@ -153,6 +155,20 @@ const crearCliente = async (req, res) => {
       throw error;
     }
     
+
+    // Enviar email de bienvenida
+    try {
+      await enviarBienvenida(
+        emailLimpio,
+        nomLimpio
+      );
+
+    } catch (error) {
+      console.error(
+        "Error al enviar email de bienvenida:",
+        error
+      );
+    }
     const redireccion = req.usuario?.rol === "admin"
         ? "/clientes/vista?creado=1"
         : "/login?registrado=1";
