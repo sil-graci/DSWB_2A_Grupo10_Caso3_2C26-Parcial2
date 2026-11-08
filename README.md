@@ -30,6 +30,7 @@ El módulo de Eventos también se actualiza en tiempo real mediante **WebSockets
 - **Variables de entorno:** dotenv.
 - **Comunicación desde el navegador:** Fetch API.
 - **Tiempo real:** Socket.IO (WebSockets).
+- **Servicio de email transaccional:** Resend.
 - **Estilos:** CSS3 nativo.
 
 ---
@@ -74,6 +75,8 @@ DSWB_2A_Grupo10_Caso3_2C26-Parcial2/
 │   │   ├── eventos.routes.js
 │   │   ├── inicio.routes.js
 │   │   └── salas.routes.js
+│   ├── services/
+│   │   └── email.service.js
 │   ├── sockets/
 │   │   └── index.js
 │   └── views/
@@ -120,6 +123,7 @@ Crear un archivo `.env` en la raíz del proyecto:
 PORT=3000
 MONGO_URI=mongodb://127.0.0.1:27017/urbanacult
 JWT_SECRET=mi-clave-secreta
+RESEND_API_KEY=<api-key-de-resend>
 ```
 
 Esa dirección corresponde a una base **MongoDB local** (Compass). Para trabajar con la base compartida en la nube (**MongoDB Atlas**), reemplazar `MONGO_URI` por la cadena de conexión del cluster:
@@ -129,9 +133,11 @@ PORT=3000
 #MONGO_URI=mongodb://127.0.0.1:27017/urbanacult
 MONGO_URI=mongodb+srv://<usuario>:<contraseña>@<cluster>.mongodb.net/urbanacult?retryWrites=true&w=majority
 JWT_SECRET=mi-clave-secreta
+RESEND_API_KEY=<api-key-de-resend>
 ```
 
-La cadena de conexión con las credenciales reales no se publica en el repositorio: el archivo `.env` está en el `.gitignore` y el equipo la comparte por un canal privado. El nombre de la base (`urbanacult`) va dentro de la URI, antes del `?`.
+Las credenciales reales de MongoDB, JWT y Resend no se publican en el repositorio. El archivo `.env` está incluido en `.gitignore` y los valores necesarios se comparten con el equipo mediante un canal privado.
+El nombre de la base (`urbanacult`) va dentro de la URI, antes del `?`.
 
 ### 4. Iniciar el servidor
 
@@ -190,11 +196,16 @@ El sistema busca el correo en MongoDB y compara la contraseña ingresada con el 
 
 Cuando las credenciales son correctas, se firma un token JWT (con expiración de 30 minutos) que incluye en su payload el correo, el rol y la referencia al cliente (clienteId), guardándolo en la cookie token. El usuario administrador es dirigido a /clientes/vista y el visitante a /eventos/vista.
 
+
 **Registro de visitantes**
 
-El enlace “Regístrate” abre `/clientes/nuevo`. Al enviar el formulario, el sistema valida los datos, guarda el cliente y crea una cuenta asociada con rol `visitante`. La cuenta queda vinculada al cliente mediante `clienteId`.
+El enlace “Regístrate” abre `/clientes/nuevo`. Al enviar el formulario, el sistema valida los datos, guarda el cliente y crea una cuenta asociada con rol visitante. La cuenta queda vinculada al cliente mediante `clienteId`.
 
-Actualmente, las cuentas nuevas reciben la contraseña temporal `1234`, que se guarda protegida con `bcryptjs`. Esta contraseña fija es una limitación de seguridad pendiente de mejora.
+Las cuentas nuevas reciben la contraseña temporal `1234`, almacenada de forma protegida mediante bcryptjs. Además, se integró **Resend** para enviar un correo de bienvenida con el email registrado, la contraseña temporal y un recordatorio para modificarla.
+
+El envío del correo se realiza luego de crear correctamente el Cliente y el Usuario. Si el servicio de email presenta un error, los registros creados en MongoDB se conservan.
+
+La contraseña temporal fija continúa siendo una limitación de seguridad pendiente de mejora.
 
 **Middlewares personalizados y permisos (src/middlewares/auth.middleware.js)**
 
@@ -397,6 +408,10 @@ Se adaptaron el modelo y el controlador para trabajar con operaciones asincróni
 
 Al registrar un cliente, el sistema crea automáticamente un usuario asociado con rol visitante, contraseña temporal protegida mediante bcryptjs y vinculación mediante clienteId.
 
+También se incorporó el envío de un **correo de bienvenida mediante Resend**. Una vez creados correctamente el Cliente y el Usuario, el sistema intenta enviar al correo registrado las credenciales iniciales y un recordatorio para modificar la contraseña temporal.
+
+La lógica de envío se encuentra separada en `src/services/email.service.js`. Si el envío del correo falla, el alta del Cliente y del Usuario no se revierte.
+
 La modificación del correo electrónico de un cliente actualiza también el correo del usuario asociado, manteniendo la consistencia entre ambas colecciones.
 
 Se incorporó la **baja lógica de clientes** mediante el campo activo. Los clientes nuevos se registran como activos y, al realizar una baja, el documento permanece almacenado en MongoDB con activo en false, conservando su identificador y las relaciones existentes.
@@ -410,6 +425,10 @@ La vista permite consultar solamente clientes activos o visualizar todos los cli
 La búsqueda permite filtrar dinámicamente por nombre, apellido, DNI o email mientras el usuario escribe.
 
 La interfaz utiliza **Fetch API** para realizar búsquedas, altas, modificaciones, bajas lógicas y reactivaciones sin necesidad de recargar completamente la página.
+
+**Servicio de email**
+
+La integración con Resend fue probada correctamente en su entorno de prueba. Actualmente se utiliza el remitente de prueba proporcionado por Resend, que limita los envíos al correo asociado a la cuenta. Para habilitar el envío de emails a cualquier cliente será necesario configurar y verificar un dominio propio.
 
 **Endpoints principales**
 
@@ -473,11 +492,13 @@ El CRUD completo fue probado utilizando la aplicación y Thunder Client.
 
 ## Próximos Pasos
 
-- Extender el uso de Fetch API al Entradas.
+- Extender el uso de Fetch API al Módulo Entradas.
 - Incorporar nuevas funcionalidades y mejoras en el módulo de Entradas.
 - Implementar consultas de entradas vendidas y disponibles por evento.
 - Extender las notificaciones en tiempo real al módulo Entradas (entradas vendidas y disponibles por evento).
 - Actualizar automáticamente el estado de los eventos vencidos con un temporizador en el servidor.
+- Implementar el cambio de contraseña temporal para los usuarios visitantes.
+- Configurar un dominio verificado para habilitar el envío de emails de bienvenida a cualquier cliente mediante Resend.
 
 
 ## Uso de IA
@@ -487,9 +508,7 @@ Usamos IA como apoyo para resolver dudas puntuales, revisar alternativas técnic
 
 La consultamos principalmente para temas relacionados con MongoDB, Mongoose, MongoDB Atlas, operaciones sobre la base de datos, `async/await`, Fetch API, validaciones, JWT, roles, middlewares e integración entre Clientes, Usuarios y Entradas.
 
-En particular, la consultamos para incorporar el manejo de sesiones con Express Session, tema presente en el módulo 10 del aula virtual (descargado el 10/10/2026), necesario para implementar el login con roles.
-
-También se utilizó como apoyo para generar imágenes culturales, desarrollar las plantillas Pug y los estilos CSS, conectar la cartelera con MongoDB e interpretar errores y conflictos de Git.
+SE utilizó como apoyo para generar imágenes culturales, desarrollar las plantillas Pug y los estilos CSS, conectar la cartelera con MongoDB e interpretar errores y conflictos de Git. También para analizar la migración del esquema de autenticación hacia JWT y la integración del servicio externo de email transaccional mediante Resend.
 
 Para los WebSockets nos basamos en el Bloque 11.0 del aula virtual (Comunicación en Tiempo Real con WebSockets) y consultamos a la IA para adaptarlo a módulos ESM (`import`), autenticar la conexión con el JWT de la cookie y notificar los cambios del módulo Eventos.
 
