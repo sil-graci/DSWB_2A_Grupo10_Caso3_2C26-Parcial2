@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
 import Usuario from "../models/Usuario.js";
 import jwt from "jsonwebtoken";
+import Cliente from "../models/Cliente.js";
+
 export const mostrarLogin = (req, res) => {
     res.render("login", {
         registrado: req.query.registrado === "1"
@@ -26,6 +28,25 @@ export const iniciarSesion = async (req, res) => {
 
         if (!passwordValida) {
             return res.status(401).json({ mensaje: "Credenciales inválidas" });
+        }
+
+
+        // Verificar que el cliente asociado esté activo
+        if (
+            usuario.rol === "visitante" &&
+            usuario.clienteId
+        ) {
+            const cliente =
+                await Cliente.findById(
+                    usuario.clienteId
+                );
+
+            if (!cliente || !cliente.activo) {
+                return res.status(403).json({
+                    mensaje:
+                        "El cliente se encuentra inactivo",
+                });
+            }
         }
 
         // crea el token
