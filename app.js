@@ -1,9 +1,14 @@
 import "dotenv/config";
 import express from "express";
 import path from "path";
-import { autenticarJWT, verificarRol } from "./src/middlewares/auth.middleware.js";
+import {
+  autenticarJWT,
+  verificarRol,
+} from "./src/middlewares/auth.middleware.js";
 import bcrypt from "bcryptjs";
 import { fileURLToPath } from "url";
+import http from "http";
+import { iniciarSockets } from "./src/sockets/index.js";
 
 import conectarDB from "./src/config/db.js";
 import Usuario from "./src/models/Usuario.js";
@@ -46,10 +51,7 @@ const cargarUsuariosIniciales = async () => {
     });
 
     if (!existe) {
-      const passwordHash = await bcrypt.hash(
-        usuario.password,
-        10
-      );
+      const passwordHash = await bcrypt.hash(usuario.password, 10);
 
       await Usuario.create({
         email: usuario.email,
@@ -66,29 +68,26 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(autenticarJWT);
 
-
-
 // Portada pública con carrusel de eventos activos
 app.use("/", inicioRoutes);
 
 // Login y cierre de sesión
 app.use("/", authRoutes);
 
-
-
 // Eventos: consultas para admin y visitante.
 // Crear, editar y borrar solo para admin.
 app.use(
   "/eventos",
   (req, res, next) => {
-    const soloLectura =
-      req.method === "GET" && req.path !== "/nuevo";
+    const soloLectura = req.method === "GET" && req.path !== "/nuevo";
 
-    return verificarRol(
-      ...(soloLectura ? ["admin", "visitante"] : ["admin"])
-    )(req, res, next);
+    return verificarRol(...(soloLectura ? ["admin", "visitante"] : ["admin"]))(
+      req,
+      res,
+      next,
+    );
   },
-  eventoRoutes
+  eventoRoutes,
 );
 
 // Clientes: registro público.
@@ -106,7 +105,7 @@ app.use(
 
     return verificarRol("admin")(req, res, next);
   },
-  clienteRoutes
+  clienteRoutes,
 );
 
 // Salas: el visitante puede consultar la lista JSON.
@@ -114,24 +113,17 @@ app.use(
 app.use(
   "/salas",
   (req, res, next) => {
-    const listaParaVisitante =
-      req.method === "GET" && req.path === "/";
+    const listaParaVisitante = req.method === "GET" && req.path === "/";
 
     return verificarRol(
-      ...(listaParaVisitante
-        ? ["admin", "visitante"]
-        : ["admin"])
+      ...(listaParaVisitante ? ["admin", "visitante"] : ["admin"]),
     )(req, res, next);
   },
-  salasRoutes
+  salasRoutes,
 );
 
 // Entradas: acceso actual para visitante y admin
-app.use(
-  "/entradas",
-  verificarRol("visitante", "admin"),
-  entradasRoutes
-);
+app.use("/entradas", verificarRol("visitante", "admin"), entradasRoutes);
 
 // Manejador 404 para rutas inexistentes
 app.use((req, res) => {
@@ -140,10 +132,7 @@ app.use((req, res) => {
   });
 });
 
-console.log(
-  "Archivo ejecutado:",
-  fileURLToPath(import.meta.url)
-);
+console.log("Archivo ejecutado:", fileURLToPath(import.meta.url));
 
 // Iniciar el servidor después de conectar a MongoDB
 const iniciarServidor = async () => {
@@ -151,22 +140,19 @@ const iniciarServidor = async () => {
     await conectarDB();
     await cargarUsuariosIniciales();
 
-    const servidor = app.listen(PORT, () => {
+    const servidor = http.createServer(app);
+    iniciarSockets(servidor);
+
+    servidor.listen(PORT, () => {
       console.log(`Servidor escuchando en puerto ${PORT}`);
     });
 
     servidor.on("error", (error) => {
-      console.error(
-        "Error al escuchar en el puerto:",
-        error.message
-      );
+      console.error("Error al escuchar en el puerto:", error.message);
       process.exit(1);
     });
   } catch (error) {
-    console.error(
-      "Error al iniciar la aplicación:",
-      error.message
-    );
+    console.error("Error al iniciar la aplicación:", error.message);
     process.exit(1);
   }
 };

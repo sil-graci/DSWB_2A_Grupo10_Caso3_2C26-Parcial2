@@ -175,7 +175,9 @@ body:not(:has(.inicio)) .section-description {
   border-radius: 12px;
   background-color: var(--blanco);
   box-shadow: var(--sombra);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .evento-card:hover {
@@ -548,11 +550,7 @@ body:has(.inicio) > .topbar {
   text-align: center;
   background-color: #25202b;
   background-image:
-    linear-gradient(
-      to top,
-      rgba(0, 0, 0, 0.75),
-      rgba(0, 0, 0, 0.1)
-    ),
+    linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.1)),
     url("/portada.png");
   background-position: center;
   background-size: cover;
@@ -590,7 +588,9 @@ body:has(.inicio) > .topbar {
   text-decoration: none;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .inicio-boton:hover {
@@ -614,11 +614,7 @@ body:has(.inicio) > .topbar {
   color: white;
   background-color: #111;
   background-image:
-    linear-gradient(
-      to bottom,
-      rgba(0, 0, 0, 0.65),
-      rgba(0, 0, 0, 0.92)
-    ),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.92)),
     url("/portada.png");
   background-position: center;
   background-size: cover;
@@ -741,7 +737,9 @@ body:has(.inicio) > .topbar {
   font: inherit;
   font-size: 1.5rem;
   cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
 }
 
 .cartelera-flecha--izquierda {
@@ -784,12 +782,7 @@ body:has(.inicio) > .topbar {
   padding: 3px;
   border: none;
   border-radius: 20px;
-  background: linear-gradient(
-    135deg,
-    #ffb36b,
-    #f471a5,
-    #a78bfa
-  );
+  background: linear-gradient(135deg, #ffb36b, #f471a5, #a78bfa);
   box-shadow: 0 10px 25px rgba(64, 36, 53, 0.25);
 }
 
@@ -1057,4 +1050,53 @@ body:has(.inicio) > .topbar {
   min-width: 0;
   margin: 0;
   white-space: nowrap;
+}
+
+/* Aviso de actualización en tiempo real */
+.aviso-tiempo-real {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 1000;
+  max-width: min(360px, calc(100% - 3rem));
+  padding: 0.9rem 1.3rem;
+  border-left: 5px solid var(--primario);
+  border-radius: 10px;
+  color: var(--texto);
+  background: var(--blanco);
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transition: opacity 0.5s;
+}
+
+.aviso-tiempo-real--oculto {
+  opacity: 0;
+}
+
+/* Contador de conexiones activas */
+.conectados {
+  margin-left: auto;
+  align-self: center;
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  color: #fff;
+  background: rgba(64, 36, 53, 0.9);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Puntito verde que indica "en línea" */
+.conectados::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: #4ade80;
+}
+
+/* Mientras no llegó el primer dato, no se muestra una cápsula vacía */
+.conectados:empty {
+  display: none;
 }

@@ -23,7 +23,9 @@ block content
   .filtros-eventos
     button#btnTodos.boton(type="button") Todos
     button#btnProximos.boton(type="button") Próximos eventos
+    span#conectados.conectados
 
   .eventos-grid#listaEventos(data-rol=usuario ? usuario.rol : "")
 
+  script(src="/socket.io/socket.io.js")
   script(src="/js/eventos.js")
