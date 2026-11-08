@@ -14,6 +14,7 @@
 Para esta **Tercera Entrega**, el sistema mantiene la **API REST**, la persistencia de datos en **MongoDB** mediante **Mongoose**, ahora alojada en **MongoDB Atlas**, las validaciones de negocio en los controladores y una interfaz web con vistas generadas mediante **Pug**.
 
 Además, incorpora autenticación con usuarios y roles, autenticación basada en JWT, middlewares personalizados y operaciones asincrónicas mediante **Fetch API** en los módulos de Clientes y Eventos.
+El módulo de Eventos también se actualiza en tiempo real mediante **WebSockets** con **Socket.IO**.
 
 ---
 
@@ -28,6 +29,7 @@ Además, incorpora autenticación con usuarios y roles, autenticación basada en
 - **Protección de contraseñas:** bcryptjs.
 - **Variables de entorno:** dotenv.
 - **Comunicación desde el navegador:** Fetch API.
+- **Tiempo real:** Socket.IO (WebSockets).
 - **Estilos:** CSS3 nativo.
 
 ---
@@ -45,6 +47,8 @@ DSWB_2A_Grupo10_Caso3_2C26-Parcial2/
 │   │   └── salas.js
 │   ├── styles.css
 │   └── imágenes utilizadas en la aplicación
+├── scripts/
+│   └── migrarFechaHora.js
 ├── src/
 │   ├── config/
 │   │   └── db.js
@@ -70,6 +74,8 @@ DSWB_2A_Grupo10_Caso3_2C26-Parcial2/
 │   │   ├── eventos.routes.js
 │   │   ├── inicio.routes.js
 │   │   └── salas.routes.js
+│   ├── sockets/
+│   │   └── index.js
 │   └── views/
 │       ├── clientes.pug
 │       ├── entradas.pug
@@ -159,7 +165,7 @@ En la Tercera Entrega la persistencia pasó de una base MongoDB local a **MongoD
 | :--- | :--- | :--- | :--- |
 | **Inicio** | `/` | `inicio.pug` | Portada y cartelera pública de eventos activos próximos |
 | **Login** | `/login` | `login.pug` | Formulario de inicio de sesión |
-| **Eventos** | `/eventos/vista` | `eventos.pug` | Grilla de eventos con estados y acciones según rol |
+| **Eventos** | `/eventos/vista` | `eventos.pug` | Grilla de eventos con estados y acciones según rol, actualizada en tiempo real |
 | **Entradas** | `/entradas/vista` | `entradas.pug` | Consulta de entradas según el usuario y su rol |
 | **Comprar entrada** | `/entradas/nueva/:eventoId` | `nueva_entrada.pug` | Formulario de compra para el evento seleccionado |
 | **Nuevo Evento** | `/eventos/nuevo` | `nuevo_evento.pug` | Formulario de alta con selector de salas |
@@ -282,13 +288,35 @@ Los identificadores deben corresponder a un evento y un cliente existentes en la
 
 ### Módulo de Eventos (/eventos)
 
-El módulo Eventos fue migrado de **JSON a MongoDB** utilizando **Mongoose**. Cada evento guarda título, descripción, imagen, fecha, hora, sala (`salaId`, referencia a Salas) y estado (`activo`, `lleno` o `finalizado`).
+El módulo Eventos fue migrado de **JSON a MongoDB** utilizando **Mongoose**. Cada evento guarda título, descripción, imagen, fecha, hora, `fechaHora`, precio, sala (`salaId`, referencia a Salas) y estado (`activo`, `lleno` o `finalizado`).
 
-El controlador trabaja con `async/await` y usa `find`, `findById`, `findOne`, `create`, `save` y `findByIdAndDelete`. La modificación usa `findById` + `save` para controlar conflictos de horario y ejecutar las validaciones del esquema.
+El controlador trabaja con `async/await` y usa `find`, `findById`, `findOne`, `create`, `save`, `updateMany` y `findByIdAndDelete`. La modificación usa `findById` + `save` para controlar conflictos de horario y ejecutar las validaciones del esquema.
+
+**Mejoras de la Tercera Entrega**
+
+- **Campo `fechaHora` (Date):** `fecha` y `hora` se mantienen como texto, porque las usan el formulario, la portada y el módulo Entradas. Un hook `pre("validate")` del modelo calcula `fechaHora` una sola vez al guardar, con zona horaria fija de Argentina (`-03:00`). MongoDB lo guarda en UTC, por lo que en Compass se ve con 3 horas más.
+- **Validación de fecha y hora:** se controla el formato (`AAAA-MM-DD` y `HH:MM`) y que la fecha exista en el calendario (se rechaza, por ejemplo, el 31/02).
+- **Consultas en la base de datos:** los eventos vencidos pasan a `finalizado` con una sola operación `updateMany`, y `/eventos/proximos` filtra y ordena con `find`, `$gt` y `sort` usando un índice sobre `fechaHora`. Antes se filtraba y ordenaba en JavaScript.
+- **Precio:** campo numérico `precio`, no negativo y con valor por defecto `0`. El precio es del evento y no se modificó el módulo Entradas.
+- **Precio en la interfaz:** se carga en el formulario y se muestra en la tarjeta (“Gratis” si es 0).
+- **Errores de validación:** responden 400 con el mensaje correspondiente, en lugar de 500.
+- **Seguridad:** `public/js/eventos.js` escapa los datos con `escaparHTML` antes de insertarlos con `innerHTML`, para evitar la inyección de HTML (XSS almacenado).
+- **Tiempo real:** los cambios en los eventos se notifican a los usuarios conectados mediante WebSockets (ver la sección *Tiempo real con WebSockets*).
+
+**Migración de eventos existentes**
+
+Los eventos cargados antes de este cambio no tienen `fechaHora`. Con MongoDB disponible, se ejecuta una sola vez:
+
+```bash
+node --env-file=.env scripts/migrarFechaHora.js
+```
+
+El script calcula `fechaHora` para esos eventos e informa cuántos actualizó. Es seguro repetirlo, y no hace falta si la base se carga desde cero.
 
 **Validaciones y manejo de errores**
 
 - Campos obligatorios, `salaId` con formato de ObjectId válido y estado dentro de los valores permitidos (400).
+- Fecha y hora con formato válido, fecha existente en el calendario y precio no negativo (400).
 - La sala indicada debe existir (404).
 - No se permite otro evento en la misma sala, fecha y hora (400). El solapamiento parcial de horarios no se controla.
 - Manejo de errores mediante `try/catch`, devolviendo 500 ante errores inesperados.
@@ -301,7 +329,7 @@ El controlador trabaja con `async/await` y usa `find`, `findById`, `findOne`, `c
 
 `public/js/nuevo_evento.js` envía el formulario con POST para el alta o PUT para la modificación.
 
-El CRUD completo fue probado utilizando la aplicación y **Thunder Client**.
+El CRUD completo, el precio y las validaciones de fecha fueron probados utilizando la aplicación, **Thunder Client** y **MongoDB Compass**.
 
 **Permisos**
 
@@ -318,7 +346,7 @@ El alta, la modificación y la baja son exclusivas del rol `admin`. El botón �
 
 **Ejemplo de registro de evento**
 
-El valor de `salaId` debe corresponder a una sala existente.
+El valor de `salaId` debe corresponder a una sala existente. `fechaHora` no se envía: la calcula el modelo. El campo `precio` es opcional (0 por defecto).
 
 ```json
 {
@@ -327,14 +355,39 @@ El valor de `salaId` debe corresponder a una sala existente.
   "imagen": "/portada.png",
   "fecha": "2026-11-20",
   "hora": "21:00",
+  "precio": 8500,
   "salaId": "665f1c2e9b1e8a3d4c5b6a78",
   "estado": "activo"
 }
 ```
 
+**Tiempo real con WebSockets (Socket.IO)**
+
+Con HTTP el navegador solo recibe datos cuando los pide: si el administrador cambia un evento, quien ya tiene abierta la lista sigue viendo información vieja hasta que recarga. Para evitarlo, el módulo Eventos usa **WebSockets** mediante **Socket.IO**: el servidor mantiene una conexión abierta con cada navegador y avisa en el momento en que algo cambia.
+
+El servidor se crea con `http.createServer(app)` y Socket.IO se inicializa en `src/sockets/index.js`. No requiere variables de entorno nuevas: usa el mismo puerto y el mismo `JWT_SECRET` que la API. El socket solo **notifica**: las altas, modificaciones y bajas siguen viajando por la API REST, con sus validaciones y permisos por rol.
+
+*Autenticación:* al conectarse, el servidor lee la cookie `token` del handshake y verifica el JWT con el mismo secreto que usa la API REST. Si falta o es inválido, la conexión se rechaza con el mensaje `No estás logueado` o `Token inválido o vencido`. Pueden conectarse los roles `admin` y `visitante`.
+
+*Mensajes emitidos por el servidor:* los de eventos se envían a la sala `eventos`, siempre después de confirmar el cambio en MongoDB. El controlador solo llama a la función `emitirEvento`, sin conocer los detalles de Socket.IO.
+
+| Mensaje | Cuándo se emite | Datos enviados |
+| :--- | :--- | :--- |
+| `evento:creado` | POST `/eventos` exitoso | `{ id, titulo }` |
+| `evento:actualizado` | PUT `/eventos/:id` exitoso | `{ id, titulo, estado }` |
+| `evento:eliminado` | DELETE `/eventos/:id` exitoso | `{ id, titulo }` |
+| `eventos:estados-actualizados` | Al consultar la API, eventos activos vencidos pasan a `finalizado` | `{ cantidad }` |
+| `usuarios:conectados` | Alguien se conecta o se desconecta (broadcast con `io.emit`) | `{ cantidad }` |
+
+*Cliente:* `public/js/eventos.js` escucha estos mensajes. Ante un cambio de eventos muestra un aviso durante unos segundos (por ejemplo, “Evento actualizado: Recital Acústico”) y vuelve a llamar a `cargarEventos()`, que conserva el filtro activo (Todos / Próximos). Con `usuarios:conectados` actualiza el contador de conexiones activas que se ve junto a los filtros. Los avisos se arman con `textContent`, por lo que los datos nunca se interpretan como HTML.
+
+*Cómo probarlo:* abrir `/eventos/vista` en dos navegadores con usuarios distintos (uno como `admin` y otro como `visitante`), crear, modificar o eliminar un evento como `admin` y verificar que la otra ventana se actualiza sola. El aviso aparece en la ventana que **no** hizo el cambio. La conexión puede verse en las herramientas de desarrollo del navegador, en la pestaña de red, filtrando por WS.
+
+*Limitaciones del tiempo real:* el token vence a los 30 minutos, pero una conexión ya abierta no se corta; se revalida al reconectar. Los avisos solo se muestran en `/eventos/vista`, no en la portada pública. El cliente recarga la lista completa en lugar de aplicar cambios individuales. El contador cuenta conexiones, no personas (dos pestañas cuentan dos). Los eventos vencidos pasan a `finalizado` cuando alguien consulta la API, y recién ahí se notifica por socket; no hay un temporizador en el servidor.
+
 **Limitaciones conocidas**
 
-La disponibilidad de entradas por evento depende del módulo Entradas. El precio no está incluido en esta entrega.
+La disponibilidad de entradas por evento depende del módulo Entradas, por lo que el estado `lleno` se marca manualmente. Las imágenes se guardan como archivos en `public/` y la base solo almacena su ruta.
 
 ### Módulo de Clientes (/clientes)
 
@@ -423,6 +476,8 @@ El CRUD completo fue probado utilizando la aplicación y Thunder Client.
 - Extender el uso de Fetch API al Entradas.
 - Incorporar nuevas funcionalidades y mejoras en el módulo de Entradas.
 - Implementar consultas de entradas vendidas y disponibles por evento.
+- Extender las notificaciones en tiempo real al módulo Entradas (entradas vendidas y disponibles por evento).
+- Actualizar automáticamente el estado de los eventos vencidos con un temporizador en el servidor.
 
 
 ## Uso de IA
@@ -435,3 +490,7 @@ La consultamos principalmente para temas relacionados con MongoDB, Mongoose, Mon
 En particular, la consultamos para incorporar el manejo de sesiones con Express Session, tema presente en el módulo 10 del aula virtual (descargado el 10/10/2026), necesario para implementar el login con roles.
 
 También se utilizó como apoyo para generar imágenes culturales, desarrollar las plantillas Pug y los estilos CSS, conectar la cartelera con MongoDB e interpretar errores y conflictos de Git.
+
+Para los WebSockets nos basamos en el Bloque 11.0 del aula virtual (Comunicación en Tiempo Real con WebSockets) y consultamos a la IA para adaptarlo a módulos ESM (`import`), autenticar la conexión con el JWT de la cookie y notificar los cambios del módulo Eventos.
+
+En el módulo Eventos la utilizamos para evaluar cómo guardar la fecha y la hora (campo `fechaHora` calculado con un hook de Mongoose), mejorar las consultas con `updateMany` y `find`/`sort`, incorporar el precio y los errores de validación como 400, y planificar la migración de MongoDB local a MongoDB Atlas. También la usamos para generar el script de migración y para que nos explicara cada concepto. Todas las propuestas se revisaron, se probaron en la aplicación, con Thunder Client y con Compass, y se ajustaron antes de incorporarlas. Durante las pruebas se detectó un error en la primera versión del hook (aceptaba fechas inexistentes como el 31/02) y se corrigió.
