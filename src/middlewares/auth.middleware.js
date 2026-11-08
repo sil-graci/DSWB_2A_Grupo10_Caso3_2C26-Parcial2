@@ -28,7 +28,6 @@ export const autenticarJWT = (req, res, next) => {
 
     res.locals.currentPath = req.path; // Variable disponible en las vistas Pug
     res.locals.usuario = req.usuario;
-    req.session = { usuario: req.usuario }; // Compatibilidad temporal hasta que Clientes y Entradas usen req.usuario
 
     next();
 };
