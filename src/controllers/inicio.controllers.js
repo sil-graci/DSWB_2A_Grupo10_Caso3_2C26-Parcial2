@@ -1,6 +1,8 @@
 import Evento from "../models/Evento.js";
 import Salas from "../models/Salas.js";
 
+import { agregarPreciosUSD } from "../services/cotizacion.service.js";
+
 export const mostrarInicio = async (req, res) => {
   try {
     const ahora = new Date();
@@ -38,7 +40,7 @@ export const mostrarInicio = async (req, res) => {
       }));
 
     res.render("inicio", {
-      eventos: disponibles,
+      eventos: await agregarPreciosUSD(disponibles),
       errorCartelera: null,
     });
   } catch (error) {

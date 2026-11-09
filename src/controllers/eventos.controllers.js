@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Evento from "../models/Evento.js";
 import Salas from "../models/Salas.js";
 import { emitirEvento } from "../sockets/index.js";
+import { agregarPreciosUSD } from "../services/cotizacion.service.js";
 
 const estadosValidos = ["activo", "lleno", "finalizado"];
 
@@ -33,7 +34,9 @@ const obtenerEventos = async (req, res) => {
     await actualizarEstados();
 
     const eventos = await Evento.find();
-    res.json(eventos);
+    res.json(
+      req.query.moneda === "usd" ? await agregarPreciosUSD(eventos) : eventos,
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -82,7 +85,9 @@ const obtenerEventosProximos = async (req, res) => {
       fechaHora: { $gt: new Date() },
     }).sort({ fechaHora: 1 });
 
-    res.json(proximos);
+    res.json(
+      req.query.moneda === "usd" ? await agregarPreciosUSD(proximos) : proximos,
+    );
   } catch (error) {
     console.error(error);
     res.status(500).json({
