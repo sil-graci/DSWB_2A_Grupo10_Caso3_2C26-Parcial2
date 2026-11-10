@@ -24,12 +24,27 @@ const actualizarEstado = async () => {
   );
 };
 
+const filtroEntradasUsuario = (usuario) =>
+  usuario.rol === "admin"
+    ? {}
+    : usuario.clienteId
+      ? { clienteId: usuario.clienteId }
+      : { _id: null };
+
 // GET ALL (API) 
 const obtenerEntradas = async (req, res) => {
   try {
-    const entradas = await Entrada.find()
+    await actualizarEstado();
+
+    if (req.usuario.rol !== "admin" && !req.usuario.clienteId) {
+      return res.json([]);
+    }
+
+    const entradas = await Entrada.find(filtroEntradasUsuario(req.usuario))
+      .sort({ createdAt: -1 })
       .populate("eventoId")
-      .populate("clienteId");
+      .populate("clienteId")
+      .lean();
 
     res.json(entradas);
   } catch (error) {
@@ -46,9 +61,16 @@ const obtenerEntradaPorId = async (req, res) => {
       return res.status(400).json({ mensaje: "El ID proporcionado no es válido" });
     }
 
-    const entrada = await Entrada.findById(id)
+    await actualizarEstado();
+
+    const filtro = {
+      _id: id,
+      ...filtroEntradasUsuario(req.usuario),
+    };
+    const entrada = await Entrada.findOne(filtro)
       .populate("eventoId")
-      .populate("clienteId");
+      .populate("clienteId")
+      .lean();
 
     if (!entrada) {
       return res.status(404).json({ mensaje: "Entrada no encontrada" });
@@ -144,8 +166,18 @@ const actualizarEntrada = async (req, res) => {
     const { id } = req.params;
     const { eventoId, clienteId, estado } = req.body ?? {};
 
+    if (req.usuario.rol !== "admin") {
+      return res.status(403).json({ mensaje: "Solo un administrador puede editar entradas" });
+    }
+
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({ mensaje: "El ID proporcionado no es válido" });
+    }
+
+    const entradaActual = await Entrada.findById(id);
+
+    if (!entradaActual) {
+      return res.status(404).json({ mensaje: "Entrada no encontrada" });
     }
 
     if (eventoId === undefined && clienteId === undefined && estado === undefined) {
@@ -190,11 +222,43 @@ const actualizarEntrada = async (req, res) => {
       return res.status(400).json({ mensaje: "El estado de la entrada no es válido" });
     }
 
-    const entrada = await Entrada.findByIdAndUpdate(
-      id,
-      { eventoId, clienteId, estado },
-      { new: true, runValidators: true },
-    );
+    const eventoDestinoId = eventoId ?? entradaActual.eventoId;
+    const estadoDestino = estado ?? entradaActual.estado;
+    const cambiaEvento = String(eventoDestinoId) !== String(entradaActual.eventoId);
+
+    if (estadoDestino === "activa" && (entradaActual.estado !== "activa" || cambiaEvento)) {
+      const eventoDestino = await Evento.findById(eventoDestinoId);
+      const salaDestino = eventoDestino
+        ? await Sala.findById(eventoDestino.salaId)
+        : null;
+
+      if (!eventoDestino || !salaDestino) {
+        return res.status(404).json({ mensaje: "No se encontró el evento o la sala" });
+      }
+
+      const entradasActivas = await Entrada.countDocuments({
+        eventoId: eventoDestinoId,
+        estado: "activa",
+        _id: { $ne: id },
+      });
+      const disponibles = Math.max(salaDestino.capacidad - entradasActivas, 0);
+
+      if (disponibles < 1) {
+        return res.status(400).json({
+          mensaje: "No quedan lugares disponibles para activar esta entrada.",
+        });
+      }
+    }
+
+    const cambios = {};
+    if (eventoId !== undefined) cambios.eventoId = eventoId;
+    if (clienteId !== undefined) cambios.clienteId = clienteId;
+    if (estado !== undefined) cambios.estado = estado;
+
+    const entrada = await Entrada.findByIdAndUpdate(id, cambios, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!entrada) {
       return res.status(404).json({ mensaje: "Entrada no encontrada" });
@@ -218,7 +282,10 @@ const eliminarEntrada = async (req, res) => {
       return res.status(400).json({ mensaje: "El ID proporcionado no es válido" });
     }
 
-    const entrada = await Entrada.findByIdAndDelete(id);
+    const entrada = await Entrada.findOneAndDelete({
+      _id: id,
+      ...filtroEntradasUsuario(req.usuario),
+    });
 
     if (!entrada) {
       return res.status(404).json({ mensaje: "Entrada no encontrada" });
@@ -267,20 +334,7 @@ const mostrarNuevaEntradaVista = async (req, res) => {
 //Mostrar el formulario para ver las entradas
 const mostrarEntradasVista = async (req, res) => {
   try {
-    await actualizarEstado();
-
-    const filtro =
-      req.usuario.rol === "admin"
-      ? {}
-      : { clienteId: req.usuario.clienteId };
-
-    const entradas = await Entrada.find(filtro)
-      .sort({ createdAt: -1 })
-      .populate("eventoId")
-      .populate("clienteId")
-      .lean();
-
-    res.render("entradas", {entradas});
+    res.render("entradas");
   } catch (error) {
     console.error(error);
     res.status(500).send("Error al cargar las entradas");

@@ -7,7 +7,7 @@ block content
     p.section-description
       | Seleccioná el cliente que va a comprar la entrada para este evento.
 
-  form.formulario-evento(action="/entradas" method="POST")
+  form#formCompraEntrada.formulario-evento(action="/entradas" method="POST")
     input(type="hidden" name="eventoId" value=evento._id)
 
     if usuario && usuario.rol === "admin"
@@ -28,6 +28,9 @@ block content
         label(for="cantidad") Cantidad de entradas
         input#cantidad(type="number" name="cantidad" min="1" step="1" value="1" required)
 
+      p#mensajeCompra.mensaje-error
+      a#verEntradas.boton(href="/entradas/vista" hidden) Ver mis entradas
+
       .formulario-evento__acciones
         a.boton.boton--secundario(href="/eventos/vista") Cancelar
         button.boton(type="submit" disabled=usuario.rol === "admin" && clientes.length === 0) Comprar entradas
@@ -36,3 +39,5 @@ block content
         p.section-description No hay clientes registrados para seleccionar.
     else if usuario && usuario.rol === "visitante"
       p.section-description No encontramos un cliente asociado a tu usuario.
+
+  script(src="/js/nueva_entrada.js" defer)
