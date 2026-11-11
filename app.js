@@ -19,6 +19,7 @@ import eventoRoutes from "./src/routes/eventos.routes.js";
 import clienteRoutes from "./src/routes/clientes.routes.js";
 import salasRoutes from "./src/routes/salas.routes.js";
 import entradasRoutes from "./src/routes/entradas.routes.js";
+import reservasRoutes from "./src/routes/reservas.routes.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -124,6 +125,7 @@ app.use(
 
 // Entradas: acceso actual para visitante y admin
 app.use("/entradas", verificarRol("visitante", "admin"), entradasRoutes);
+app.use("/reservas", verificarRol("admin"), reservasRoutes);
 
 // Manejador 404 para rutas inexistentes
 app.use((req, res) => {
