@@ -77,8 +77,8 @@ DSWB_2A_Grupo10_Caso3_2C26-Parcial2/
 │   │   ├── inicio.routes.js
 │   │   └── salas.routes.js
 │   ├── services/
-│   │   └── email.service.js
-│   │   └── cotizacion.service.js
+│   │   ├── email.service.js
+│   │   ├── cotizacion.service.js
 │   ├── sockets/
 │   │   └── index.js
 │   └── views/
@@ -160,7 +160,7 @@ Si se configura otro puerto, reemplazar `3000` por el valor correspondiente.
 En la Tercera Entrega la persistencia pasó de una base MongoDB local a **MongoDB Atlas**, el servicio en la nube de MongoDB, para que todo el equipo trabaje sobre los mismos datos.
 
 - **Cluster:** `UrbanaCult`, plan gratuito M0 (512 MB de almacenamiento), con la base `urbanacult`.
-- **Colecciones:** `salas`, `eventos`, `clientes`, `entradas`, `usuarios`y `cotizaciones`.
+- **Colecciones:** `salas`, `eventos`, `clientes`, `entradas`, `usuarios` y `cotizaciones`.
 - **Acceso:** un usuario de base de datos con permiso de lectura y escritura, y una lista de acceso de red que permite conexiones desde cualquier IP (`0.0.0.0/0`), solo por tratarse de un trabajo práctico.
 - **Migración de datos:** cada colección se exportó desde MongoDB Compass en formato JSON y se importó en Atlas, respetando el orden salas → eventos → clientes → entradas → usuarios para conservar las referencias.
 - **Cambios en el código:** ninguno. `src/config/db.js` ya leía la variable `MONGO_URI`, así que alcanzó con cambiar el `.env`.
