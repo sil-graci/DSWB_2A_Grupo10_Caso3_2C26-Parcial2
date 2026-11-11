@@ -349,6 +349,10 @@ El script calcula `fechaHora` para esos eventos e informa cuántos actualizó. E
 
 El CRUD completo, el precio y las validaciones de fecha fueron probados utilizando la aplicación, **Thunder Client** y **MongoDB Compass**.
 
+El escape de HTML se verificó creando un evento con el título `<b>prueba</b>`, que se muestra como texto y no como formato.
+
+También se verificó que el contador de conexiones activas sube al conectarse un segundo navegador y baja al cerrarlo.
+
 **Permisos**
 
 El alta, la modificación y la baja son exclusivas del rol `admin`. El botón “Comprar entrada” aparece para `admin` y `visitante` en los eventos activos.
