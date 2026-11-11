@@ -186,6 +186,13 @@ En la Tercera Entrega la persistencia pasó de una base MongoDB local a **MongoD
 
 La aplicación utiliza JSON Web Tokens (JWT) firmados con jsonwebtoken para autenticar al usuario y mantener su identidad mediante una cookie httpOnly (o mediante el encabezado Authorization: Bearer <token>).
 
+**Usuarios de prueba iniciales**
+
+| Rol | Email | Contraseña por defecto |
+| :--- | :--- | :--- |
+| **Administrador** | `admin@urbanacult.com` | `admin123` |
+| **Visitante** | `visitante@urbanacult.com` | `visitante123` |
+
 **Rutas de autenticación**
 
 GET /login: muestra el formulario de acceso.

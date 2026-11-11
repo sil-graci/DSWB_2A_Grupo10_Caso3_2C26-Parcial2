@@ -35,12 +35,12 @@ const cargarUsuariosIniciales = async () => {
   const usuariosIniciales = [
     {
       email: "admin@urbanacult.com",
-      password: "admin123",
+      password: process.env.ADMIN_PASSWORD || "admin123",
       rol: "admin",
     },
     {
       email: "visitante@urbanacult.com",
-      password: "visitante123",
+      password: process.env.VISITANTE_PASSWORD || "visitante123",
       rol: "visitante",
     },
   ];
