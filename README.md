@@ -328,11 +328,10 @@ El controlador trabaja con `async/await` y usa `find`, `findById`, `findOne`, `c
 - **Validación de fecha y hora:** se controla el formato (`AAAA-MM-DD` y `HH:MM`) y que la fecha exista en el calendario (se rechaza, por ejemplo, el 31/02).
 - **Consultas en la base de datos:** los eventos vencidos pasan a `finalizado` con una sola operación `updateMany`, y `/eventos/proximos` filtra y ordena con `find`, `$gt` y `sort` usando un índice sobre `fechaHora`. Antes se filtraba y ordenaba en JavaScript.
 - **Precio:** campo numérico `precio`, no negativo y con valor por defecto `0`. El precio es del evento y no se modificó el módulo Entradas.
-- **Precio en la interfaz:** se carga en el formulario y se muestra en la tarjeta (“Gratis” si es 0).
+- **Precio en la interfaz:** se carga en el formulario y las tarjetas muestran el importe en pesos y su equivalente en dólares. Si el precio es 0, muestran «Gratis».
 - **Errores de validación:** responden 400 con el mensaje correspondiente, en lugar de 500.
 - **Seguridad:** `public/js/eventos.js` escapa los datos con `escaparHTML` antes de insertarlos con `innerHTML`, para evitar la inyección de HTML (XSS almacenado).
 - **Tiempo real:** los cambios en los eventos se notifican a los usuarios conectados mediante WebSockets (ver la sección *Tiempo real con WebSockets*).
-- **Precio en la interfaz:** se carga en el formulario y las tarjetas muestran el importe en pesos y su equivalente en dólares. Si el precio es 0, muestran «Gratis».
 - **Conversión con DolarAPI:** `cotizacion.service.js` consulta la cotización de venta del dólar oficial y calcula `precioUSD = precio / cotizacion`. La consulta tiene un tiempo máximo de espera de dos segundos. La conversión es informativa y no modifica el precio almacenado en pesos.
 - **Respaldo de cotización:** la última cotización válida y su fecha de consulta se guardan en la colección auxiliar `cotizaciones` de MongoDB. Si la API falla, se utiliza ese respaldo, incluso después de reiniciar el servidor. El equivalente en dólares se calcula al consultar y no se guarda en el evento.
 
