@@ -94,6 +94,7 @@ DSWB_2A_Grupo10_Caso3_2C26-Parcial2/
 │       ├── nuevo_evento.pug
 │       └── salas.pug
 ├── .env
+├── .env.example
 ├── .gitignore
 ├── app.js
 ├── package.json
@@ -126,6 +127,8 @@ PORT=3000
 MONGO_URI=mongodb://127.0.0.1:27017/urbanacult
 JWT_SECRET=mi-clave-secreta
 RESEND_API_KEY=<api-key-de-resend>
+ADMIN_PASSWORD=admin123
+VISITANTE_PASSWORD=visitante123
 ```
 
 Esa dirección corresponde a una base **MongoDB local** (Compass). Para trabajar con la base compartida en la nube (**MongoDB Atlas**), reemplazar `MONGO_URI` por la cadena de conexión del cluster:
@@ -136,6 +139,8 @@ PORT=3000
 MONGO_URI=mongodb+srv://<usuario>:<contraseña>@<cluster>.mongodb.net/urbanacult?retryWrites=true&w=majority
 JWT_SECRET=mi-clave-secreta
 RESEND_API_KEY=<api-key-de-resend>
+ADMIN_PASSWORD=admin123
+VISITANTE_PASSWORD=visitante123
 ```
 
 Las credenciales reales de MongoDB, JWT y Resend no se publican en el repositorio. El archivo `.env` está incluido en `.gitignore` y los valores necesarios se comparten con el equipo mediante un canal privado.
