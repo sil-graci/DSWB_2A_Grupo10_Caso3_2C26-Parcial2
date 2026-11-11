@@ -13,7 +13,7 @@
 
 Para esta **Tercera Entrega**, el sistema mantiene la **API REST**, la persistencia de datos en **MongoDB** mediante **Mongoose**, ahora alojada en **MongoDB Atlas**, las validaciones de negocio en los controladores y una interfaz web con vistas generadas mediante **Pug**.
 
-Además, incorpora autenticación con usuarios y roles, autenticación basada en JWT, middlewares personalizados y operaciones asincrónicas mediante **Fetch API** en los módulos de Clientes y Eventos.
+Además, incorpora autenticación con usuarios y roles, autenticación basada en JWT, middlewares personalizados y operaciones asincrónicas mediante **Fetch API** en los módulos de Clientes, Eventos, Entradas y Salas.
 El módulo de Eventos también se actualiza en tiempo real mediante **WebSockets** con **Socket.IO**.
 
 ---
@@ -44,7 +44,9 @@ DSWB_2A_Grupo10_Caso3_2C26-Parcial2/
 │   ├── js/
 │   │   ├── cliente-form.js
 │   │   ├── clientes.js
+│   │   ├── entradas.js
 │   │   ├── eventos.js
+│   │   ├── nueva_entrada.js
 │   │   ├── nuevo_evento.js
 │   │   └── salas.js
 │   ├── styles.css
@@ -75,10 +77,11 @@ DSWB_2A_Grupo10_Caso3_2C26-Parcial2/
 │   │   ├── entradas.routes.js
 │   │   ├── eventos.routes.js
 │   │   ├── inicio.routes.js
+│   │   ├── reservas.routes.js
 │   │   └── salas.routes.js
 │   ├── services/
 │   │   ├── email.service.js
-│   │   ├── cotizacion.service.js
+│   │   └── cotizacion.service.js
 │   ├── sockets/
 │   │   └── index.js
 │   └── views/
@@ -92,6 +95,7 @@ DSWB_2A_Grupo10_Caso3_2C26-Parcial2/
 │       ├── nueva_sala.pug
 │       ├── nuevo_cliente.pug
 │       ├── nuevo_evento.pug
+│       ├── reservas.pug
 │       └── salas.pug
 ├── .env
 ├── .env.example
@@ -186,6 +190,7 @@ En la Tercera Entrega la persistencia pasó de una base MongoDB local a **MongoD
 | **Nuevo Cliente** | `/clientes/nuevo` | `nuevo_cliente.pug` | Formulario de registro de clientes |
 | **Salas** | `/salas/vista` | `salas.pug` | Listado de salas y sus capacidades |
 | **Nueva Sala** | `/salas/nuevo` | `nueva_sala.pug` | Formulario de alta de salas |
+| **Reservas** | `/reservas/vista` | `reservas.pug `| Módulo en desarrollo, disponible solo para administrador|
 
 ## Autenticación e Interfaz Web
 
@@ -275,7 +280,7 @@ El usuario con rol `visitante` puede visualizar:
 - Eventos.
 - Entradas.
 
-Las opciones Reservas, Clientes y Salas no se muestran para el visitante. La implementación funcional del módulo Reservas queda pendiente.
+Las opciones Reservas, Clientes y Salas no se muestran para el visitante. Las opciones Reservas, Clientes y Salas no se muestran para el visitante. Reservas cuenta actualmente con una vista informativa protegida para el rol administrador, mientras que la implementación funcional del módulo continúa en desarrollo.
 
 ## Documentación de la API REST (JSON)
 
@@ -289,7 +294,7 @@ También se incorporaron validaciones simples y manejo de errores con `try/catch
 
 Como regla de negocio, la compra y asignación de entradas solo puede realizarse a clientes activos. En el caso del administrador, el formulario de compra muestra únicamente clientes con estado activo. Además, el backend valida el estado del cliente antes de crear o reasignar una entrada, evitando que la restricción dependa únicamente de la interfaz.
 
-El CRUD completo fue probado correctamente utilizando Thunder Client. En próximas iteraciones se añadirá la funcionalidad de eliminar y modificar entradas dentro del programa (desde la web), ya que desde la interfaz del programa todavía no es posible modificar ni eliminar entradas; esas acciones están disponibles mediante la API REST.
+El CRUD completo fue probado correctamente utilizando Thunder Client. 
 
 **Endpoints principales**
 
@@ -513,7 +518,6 @@ El CRUD completo fue probado utilizando la aplicación y Thunder Client.
 
 ## Próximos Pasos
 
-- Extender el uso de Fetch API al Módulo Entradas.
 - Incorporar nuevas funcionalidades y mejoras en el módulo de Entradas.
 - Implementar consultas de entradas vendidas y disponibles por evento.
 - Extender las notificaciones en tiempo real al módulo Entradas (entradas vendidas y disponibles por evento).
