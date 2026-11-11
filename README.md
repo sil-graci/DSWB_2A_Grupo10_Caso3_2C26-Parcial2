@@ -357,7 +357,7 @@ El script calcula `fechaHora` para esos eventos e informa cuántos actualizó. E
 
 **Interfaz con Fetch API**
 
-`public/js/eventos.js` pide eventos y salas en paralelo mediante `Promise.all`, arma las tarjetas con el nombre de cada sala y permite filtrar próximos y eliminar sin recargar.
+`public/js/eventos.js` pide eventos y salas en paralelo mediante `Promise.all`, arma las tarjetas con el nombre de cada sala y permite filtrar entre Todos y Próximos, y crear, modificar y eliminar sin recargar la página.
 
 `public/js/nuevo_evento.js` envía el formulario con POST para el alta o PUT para la modificación.
 
@@ -509,7 +509,7 @@ El CRUD completo fue probado utilizando la aplicación y Thunder Client.
 
 - **200 OK:** petición resuelta con éxito en consultas, modificaciones y bajas.
 - **201 Created:** recurso creado exitosamente.
-- **400 Bad Request:** datos incompletos, cadenas vacías, identificadores con formato inválido o conflicto de horario en la misma sala.
+- **400 Bad Request:** datos incompletos, cadenas vacías, identificadores con formato inválido, fecha u hora con formato inválido o inexistente, precio negativo o conflicto de horario en la misma sala.
 - **401 Unauthorized:** credenciales inválidas o solicitud a una ruta protegida sin haber iniciado sesión.
 - **403 Forbidden:** el usuario inició sesión, pero su rol no tiene permiso para realizar la operación.
 - **404 Not Found:** el recurso consultado, editado o borrado no existe.
