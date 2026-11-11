@@ -192,7 +192,7 @@ GET /login: muestra el formulario de acceso.
 POST /login: valida los datos obligatorios (400), verifica las credenciales (401) y genera el token JWT firmado.
 POST /logout: elimina la cookie token y redirige al inicio.
 
-El sistema busca el correo en MongoDB y compara la contraseña ingresada con el hash almacenado, utilizando bcryptjs. Si faltan datos responde con 400; si el usuario no existe o la contraseña no coincide, responde con el código 401 y el mensaje “Credenciales inválidas”.
+El sistema busca el correo en MongoDB y compara la contraseña ingresada con el hash almacenado, utilizando bcryptjs. Si faltan datos responde con 400; si el usuario no existe o la contraseña no coincide, responde con el código 401 y el mensaje “Credenciales inválidas”. Si el cliente tiene baja lógica (activo: false) devuelve 403 ("El cliente se encuentra inactivo").
 
 Cuando las credenciales son correctas, se firma un token JWT (con expiración de 30 minutos) que incluye en su payload el correo, el rol y la referencia al cliente (clienteId), guardándolo en la cookie token. El usuario administrador es dirigido a /clientes/vista y el visitante a /eventos/vista.
 
