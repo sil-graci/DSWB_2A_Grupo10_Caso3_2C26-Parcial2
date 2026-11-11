@@ -32,6 +32,7 @@ El módulo de Eventos también se actualiza en tiempo real mediante **WebSockets
 - **Tiempo real:** Socket.IO (WebSockets).
 - **Servicio de email transaccional:** Resend.
 - **Estilos:** CSS3 nativo.
+- **Cotización del dólar oficial:** DolarAPI.
 
 ---
 
@@ -77,6 +78,7 @@ DSWB_2A_Grupo10_Caso3_2C26-Parcial2/
 │   │   └── salas.routes.js
 │   ├── services/
 │   │   └── email.service.js
+│   │   └── cotizacion.service.js
 │   ├── sockets/
 │   │   └── index.js
 │   └── views/
@@ -158,7 +160,7 @@ Si se configura otro puerto, reemplazar `3000` por el valor correspondiente.
 En la Tercera Entrega la persistencia pasó de una base MongoDB local a **MongoDB Atlas**, el servicio en la nube de MongoDB, para que todo el equipo trabaje sobre los mismos datos.
 
 - **Cluster:** `UrbanaCult`, plan gratuito M0 (512 MB de almacenamiento), con la base `urbanacult`.
-- **Colecciones:** `salas`, `eventos`, `clientes`, `entradas` y `usuarios`.
+- **Colecciones:** `salas`, `eventos`, `clientes`, `entradas`, `usuarios`y `cotizaciones`.
 - **Acceso:** un usuario de base de datos con permiso de lectura y escritura, y una lista de acceso de red que permite conexiones desde cualquier IP (`0.0.0.0/0`), solo por tratarse de un trabajo práctico.
 - **Migración de datos:** cada colección se exportó desde MongoDB Compass en formato JSON y se importó en Atlas, respetando el orden salas → eventos → clientes → entradas → usuarios para conservar las referencias.
 - **Cambios en el código:** ninguno. `src/config/db.js` ya leía la variable `MONGO_URI`, así que alcanzó con cambiar el `.env`.
@@ -169,7 +171,7 @@ En la Tercera Entrega la persistencia pasó de una base MongoDB local a **MongoD
 
 | Módulo / Sección | Ruta Web | Vista Pug | Descripción |
 | :--- | :--- | :--- | :--- |
-| **Inicio** | `/` | `inicio.pug` | Portada y cartelera pública de eventos activos próximos |
+| **Inicio** | `/` |  `inicio.pug` | Portada y cartelera pública de eventos activos próximos, con precio y selector Pesos/Dólares dentro de los detalles de cada evento, disponible sin iniciar sesión. |
 | **Login** | `/login` | `login.pug` | Formulario de inicio de sesión |
 | **Eventos** | `/eventos/vista` | `eventos.pug` | Grilla de eventos con estados y acciones según rol, actualizada en tiempo real |
 | **Entradas** | `/entradas/vista` | `entradas.pug` | Consulta de entradas según el usuario y su rol |
@@ -320,6 +322,9 @@ El controlador trabaja con `async/await` y usa `find`, `findById`, `findOne`, `c
 - **Errores de validación:** responden 400 con el mensaje correspondiente, en lugar de 500.
 - **Seguridad:** `public/js/eventos.js` escapa los datos con `escaparHTML` antes de insertarlos con `innerHTML`, para evitar la inyección de HTML (XSS almacenado).
 - **Tiempo real:** los cambios en los eventos se notifican a los usuarios conectados mediante WebSockets (ver la sección *Tiempo real con WebSockets*).
+- **Precio en la interfaz:** se carga en el formulario y las tarjetas muestran el importe en pesos y su equivalente en dólares. Si el precio es 0, muestran «Gratis».
+- **Conversión con DolarAPI:** `cotizacion.service.js` consulta la cotización de venta del dólar oficial y calcula `precioUSD = precio / cotizacion`. La consulta tiene un tiempo máximo de espera de dos segundos. La conversión es informativa y no modifica el precio almacenado en pesos.
+- **Respaldo de cotización:** la última cotización válida y su fecha de consulta se guardan en la colección auxiliar `cotizaciones` de MongoDB. Si la API falla, se utiliza ese respaldo, incluso después de reiniciar el servidor. El equivalente en dólares se calcula al consultar y no se guarda en el evento.
 
 **Migración de eventos existentes**
 
@@ -519,8 +524,8 @@ Usamos IA como apoyo para resolver dudas puntuales, revisar alternativas técnic
 
 La consultamos principalmente para temas relacionados con MongoDB, Mongoose, MongoDB Atlas, operaciones sobre la base de datos, `async/await`, Fetch API, validaciones, JWT, roles, middlewares e integración entre Clientes, Usuarios y Entradas.
 
-SE utilizó como apoyo para generar imágenes culturales, desarrollar las plantillas Pug y los estilos CSS, conectar la cartelera con MongoDB e interpretar errores y conflictos de Git. También para analizar la migración del esquema de autenticación hacia JWT y la integración del servicio externo de email transaccional mediante Resend.
+Se utilizó como apoyo para generar imágenes culturales, desarrollar las plantillas Pug y los estilos CSS, conectar la cartelera con MongoDB e interpretar errores y conflictos de Git. También para analizar la migración del esquema de autenticación hacia JWT y la integración del servicio externo de email transaccional mediante Resend.
 
 Para los WebSockets nos basamos en el Bloque 11.0 del aula virtual (Comunicación en Tiempo Real con WebSockets) y consultamos a la IA para adaptarlo a módulos ESM (`import`), autenticar la conexión con el JWT de la cookie y notificar los cambios del módulo Eventos.
 
-En el módulo Eventos la utilizamos para evaluar cómo guardar la fecha y la hora (campo `fechaHora` calculado con un hook de Mongoose), mejorar las consultas con `updateMany` y `find`/`sort`, incorporar el precio y los errores de validación como 400, y planificar la migración de MongoDB local a MongoDB Atlas. También la usamos para generar el script de migración y para que nos explicara cada concepto. Todas las propuestas se revisaron, se probaron en la aplicación, con Thunder Client y con Compass, y se ajustaron antes de incorporarlas. Durante las pruebas se detectó un error en la primera versión del hook (aceptaba fechas inexistentes como el 31/02) y se corrigió.
+En el módulo Eventos la utilizamos para evaluar cómo guardar la fecha y la hora (campo `fechaHora` calculado con un hook de Mongoose), mejorar las consultas con `updateMany` y `find`/`sort`, incorporar el precio y los errores de validación como 400, y planificar la migración de MongoDB local a MongoDB Atlas. También la usamos para generar el script de migración y para que nos explicara cada concepto. Todas las propuestas se revisaron, se probaron en la aplicación, con Thunder Client y con Compass, y se ajustaron antes de incorporarlas. Durante las pruebas se detectó un error en la primera versión del hook (aceptaba fechas inexistentes como el 31/02) y se corrigió. Se utilizó IA como apoyo para identificar DolarAPI como fuente de cotización, orientar la conexión con el servicio y mostrar el equivalente en dólares de los precios en pesos.
