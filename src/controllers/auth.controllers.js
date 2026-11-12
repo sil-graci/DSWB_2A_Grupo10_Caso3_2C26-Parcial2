@@ -78,7 +78,7 @@ export const iniciarSesion = async (req, res) => {
         res.status(500).json({ mensaje: "Error al iniciar sesión" });
     }
 };
-
+// Cierra sesión limpiando la cookie
 export const cerrarSesion = (req, res) => {
     res.clearCookie("token");
     res.redirect("/");

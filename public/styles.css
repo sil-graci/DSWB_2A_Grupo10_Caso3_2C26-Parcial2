@@ -282,6 +282,26 @@ body:not(:has(.inicio)) .formulario-evento {
   min-height: 1.2em;
 }
 
+.dialogo-entrada {
+  width: min(92vw, 540px);
+  max-height: 90vh;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+}
+
+.dialogo-entrada::backdrop {
+  background: rgba(15, 23, 42, 0.62);
+}
+
+.dialogo-entrada .formulario-evento {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+}
+
 /* Estilos de mensajes de clientes agregados por Adri */
 .mensaje-error-cliente {
   margin: 0 0 12px;
@@ -858,10 +878,6 @@ body:has(.inicio) > .topbar {
 
 .evento-card--foto .dato__valor {
   color: #fff;
-}
-
-.boton-eliminar-entrada {
-  margin-top: 16px;
 }
 
 /* Estados de los eventos */
