@@ -3,6 +3,10 @@ const esAdmin = listaEventos.dataset.rol === "admin";
 const esVisitante = listaEventos.dataset.rol === "visitante";
 
 let rutaActual = "/eventos";
+const formatoUSD = new Intl.NumberFormat("es-AR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
 
 // Convierte los caracteres especiales de HTML en texto inofensivo, para que
 // un dato guardado en la base se muestre como texto y nunca se ejecute como código
@@ -19,7 +23,7 @@ async function cargarEventos(ruta = rutaActual) {
   rutaActual = ruta;
   try {
     const [resEventos, resSalas] = await Promise.all([
-      fetch(ruta),
+      fetch(ruta + "?moneda=usd"),
       fetch("/salas"),
     ]);
     const eventos = await resEventos.json();
@@ -46,6 +50,11 @@ async function cargarEventos(ruta = rutaActual) {
       const puedeComprar =
         (esAdmin || esVisitante) && evento.estado === "activo";
 
+      const precioEnPesos =
+        evento.precio > 0
+          ? "$" + Number(evento.precio).toLocaleString("es-AR") + " ARS"
+          : "Gratis";
+
       listaEventos.innerHTML += `
       <article class="evento-card evento-card--foto">
         <img class="evento-card__fondo" src="${escaparHTML(evento.imagen || "/portada.png")}" alt="" loading="lazy"
@@ -62,7 +71,15 @@ async function cargarEventos(ruta = rutaActual) {
           <div class="evento-card__datos">
             <div class="dato"><span class="dato__label">Fecha</span><span class="dato__valor">${escaparHTML(evento.fecha)}</span></div>
             <div class="dato"><span class="dato__label">Hora</span><span class="dato__valor">${escaparHTML(evento.hora)}</span></div>
-            <div class="dato"><span class="dato__label">Precio</span><span class="dato__valor">${evento.precio > 0 ? "$" + Number(evento.precio).toLocaleString("es-AR") : "Gratis"}</span></div>
+            <div class="dato">
+              <span class="dato__label">Precio</span>
+              <span class="dato__valor">${precioEnPesos}</span>
+              ${
+                Number.isFinite(evento.precioUSD)
+                  ? `<span class="dato__valor">USD ${formatoUSD.format(evento.precioUSD)}${evento.usaUltimaCotizacion ? " · Última cotización disponible" : ""}</span>`
+                  : ""
+              }
+            </div>
             <div class="dato"><span class="dato__label">Sala</span><span class="dato__valor">${escaparHTML(nombresSalas[evento.salaId] || "Sala eliminada")}</span></div>
           </div>
 
@@ -163,4 +180,3 @@ socket.on("usuarios:conectados", ({ cantidad }) => {
 socket.on("connect_error", (error) => {
   console.warn("No se pudo abrir el canal en tiempo real:", error.message);
 });
-

@@ -70,6 +70,25 @@ block content
                     p Fecha: #{evento.fecha}
                     p Hora: #{evento.hora}
                     p Sala: #{evento.nombreSala}
+                    if Number.isFinite(evento.precio) && evento.precio > 0
+                      - const precioARS = "$" + evento.precio.toLocaleString("es-AR") + " ARS"
+                      - const tieneUSD = Number.isFinite(evento.precioUSD)
+                      - const precioUSD = tieneUSD ? "USD " + evento.precioUSD.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + (evento.usaUltimaCotizacion ? " · Última cotización disponible" : "") : ""
+                      .espectaculo-monedas(role="group" aria-label="Moneda del precio")
+                        button.boton.boton--chico(type="button" aria-pressed="true" data-precio=precioARS) Pesos
+                        = " "
+                        button.boton.boton--chico.boton--secundario(type="button" aria-pressed="false" data-precio=precioUSD disabled=!tieneUSD) Dólares
+                      if !tieneUSD
+                        p Cotización en dólares no disponible.
+                      p
+                        strong Entrada:
+                        = " "
+                        span(data-precio-visible aria-live="polite")= precioARS
+                    else if evento.precio === 0
+                      p
+                        strong Gratis
+                    else
+                      p Precio no informado
 
                   if usuario
                     a.boton(
@@ -116,6 +135,20 @@ block content
         });
 
         if (!lista) return;
+
+        lista.addEventListener("click", (event) => {
+          const boton = event.target.closest(".espectaculo-monedas button");
+          if (!boton) return;
+
+          const grupo = boton.closest(".espectaculo-monedas");
+          const precio = grupo.closest("details").querySelector("[data-precio-visible]");
+          precio.textContent = boton.dataset.precio;
+
+          grupo.querySelectorAll("button").forEach((opcion) => {
+            opcion.setAttribute("aria-pressed", String(opcion === boton));
+            opcion.classList.toggle("boton--secundario", opcion !== boton);
+          });
+        });
 
         flechas.forEach((flecha) => {
           flecha.addEventListener("click", () => {
