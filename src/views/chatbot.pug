@@ -1,0 +1,39 @@
+
+#chatbot-urbana(data-rol=usuario && usuario.rol ? usuario.rol : "")
+  button#chatbot-abrir(type="button" aria-label="Abrir asistente") 💬
+
+  section#chatbot-ventana.chatbot-ventana(aria-label="Asistente Urbana Cult" hidden)
+    .chatbot-encabezado
+      div
+        strong Asistente Urbana Cult
+        small Tu guía cultural
+      button#chatbot-cerrar(type="button" aria-label="Cerrar chatbot") −
+
+    #chatbot-mensajes.chatbot-mensajes(aria-live="polite")
+      p.chatbot-mensaje.chatbot-bot
+        | ¡Hola! Soy el asistente de Urbana Cult.
+        | ¿En qué puedo ayudarte?
+
+    #chatbot-preguntas.chatbot-preguntas
+      button(type="button") ¿Qué eventos hay?
+      button(type="button") Recomendame un evento
+      button(type="button") ¿Cómo compro entradas?
+      button(type="button") ¿Dónde consulto mis entradas?
+
+      if usuario && usuario.rol === "admin"
+        button(type="button") ¿Qué salas tienen?
+        button(type="button") ¿Cómo gestiono las reservas?
+
+    button#chatbot-menu.chatbot-menu(type="button" hidden) Ver preguntas frecuentes
+
+    form#chatbot-formulario.chatbot-formulario
+      input#chatbot-input(
+        type="text"
+        placeholder="Escribí tu consulta..."
+        aria-label="Escribí tu consulta"
+        maxlength="200"
+        autocomplete="off"
+        required
+      )
+      button(type="submit" aria-label="Enviar mensaje") ➤
+
