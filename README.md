@@ -178,6 +178,24 @@ En la Tercera Entrega la persistencia pasó de una base MongoDB local a **MongoD
 - **Usuarios iniciales:** al arrancar, la aplicación crea el usuario administrador y el visitante si no existen.
 - **Imágenes:** los archivos se guardan en `public/`. La base solo almacena la ruta.
 
+## Despliegue en Vercel
+
+La aplicación está desplegada en Vercel y conectada a MongoDB Atlas.
+
+**Enlace:** https://dswb-2-a-grupo10-caso3-2-c26-parcia.vercel.app
+
+Para ingresar se pueden usar los usuarios de prueba de la sección *Autenticación e Interfaz Web* (administrador: `admin@urbanacult.com`, visitante: `visitante@urbanacult.com`).
+
+**Cómo se desplegó**
+
+1. Se importó el repositorio de GitHub desde vercel.com, con el preset Express.
+2. Se cargaron en Vercel las variables de entorno (`MONGO_URI`, `JWT_SECRET`, `RESEND_API_KEY`, `ADMIN_PASSWORD` y `VISITANTE_PASSWORD`), porque el `.env` no se sube al repositorio.
+3. En MongoDB Atlas se mantiene habilitado el acceso desde cualquier IP (`0.0.0.0/0`), necesario porque Vercel no usa una IP fija.
+4. Cada cambio subido a la rama `main` genera un nuevo despliegue.
+
+**WebSockets en Vercel:** Vercel permite conexiones WebSocket en sus funciones. Para que Socket.IO funcione ahí, el cliente (`public/js/eventos.js`) se conecta usando solo el transporte WebSocket: `io({ transports: ["websocket"] })`.
+
+
 ## Navegación en el Navegador (Vistas Pug)
 
 | Módulo / Sección | Ruta Web | Vista Pug | Descripción |
@@ -283,10 +301,6 @@ El usuario con rol `visitante` puede visualizar:
 - Entradas.
 
 Las opciones Reservas, Clientes y Salas no se muestran para el visitante. Las opciones Reservas, Clientes y Salas no se muestran para el visitante. Reservas cuenta actualmente con una vista informativa protegida para el rol administrador, mientras que la implementación funcional del módulo continúa en desarrollo.
-
-### Menú según rol de usuario
-
-(Contenido que ya tienen)
 
 ### Chatbot de asistencia
 
