@@ -36,12 +36,12 @@ const cargarUsuariosIniciales = async () => {
   const usuariosIniciales = [
     {
       email: "admin@urbanacult.com",
-      password: process.env.ADMIN_PASSWORD || "admin123",
+      password: process.env.ADMIN_PASSWORD,
       rol: "admin",
     },
     {
       email: "visitante@urbanacult.com",
-      password: process.env.VISITANTE_PASSWORD || "visitante123",
+      password: process.env.VISITANTE_PASSWORD,
       rol: "visitante",
     },
   ];
@@ -51,7 +51,7 @@ const cargarUsuariosIniciales = async () => {
       email: usuario.email,
     });
 
-    if (!existe) {
+    if (!existe && usuario.password) {
       const passwordHash = await bcrypt.hash(usuario.password, 10);
 
       await Usuario.create({
