@@ -49,6 +49,7 @@ DSWB_2A_Grupo10_Caso3_2C26-Parcial2/
 │   │   ├── nueva_entrada.js
 │   │   ├── nuevo_evento.js
 │   │   └── salas.js
+│   │   └── chatbot.js
 │   ├── styles.css
 │   └── imágenes utilizadas en la aplicación
 ├── scripts/
@@ -97,6 +98,7 @@ DSWB_2A_Grupo10_Caso3_2C26-Parcial2/
 │       ├── nuevo_evento.pug
 │       ├── reservas.pug
 │       └── salas.pug
+│       └── chatbot.pug
 ├── .env
 ├── .env.example
 ├── .gitignore
@@ -281,6 +283,30 @@ El usuario con rol `visitante` puede visualizar:
 - Entradas.
 
 Las opciones Reservas, Clientes y Salas no se muestran para el visitante. Las opciones Reservas, Clientes y Salas no se muestran para el visitante. Reservas cuenta actualmente con una vista informativa protegida para el rol administrador, mientras que la implementación funcional del módulo continúa en desarrollo.
+
+### Menú según rol de usuario
+
+(Contenido que ya tienen)
+
+### Chatbot de asistencia
+
+Se incorporó un chatbot desarrollado con JavaScript
+y Pug para responder consultas frecuentes sobre
+eventos y entradas.
+
+El asistente utiliza Fetch API y funciones
+asincrónicas para consultar los próximos eventos
+disponibles desde el backend.
+
+También adapta las respuestas según el estado de
+sesión y el rol del usuario.
+
+**Archivos principales:**
+
+- `src/views/chatbot.pug`: estructura del chatbot.
+- `public/js/chatbot.js`: lógica y consultas a la API.
+- `public/styles.css`: estilos visuales.
+- `src/views/layout.pug`: integración con las vistas.
 
 ## Documentación de la API REST (JSON)
 
