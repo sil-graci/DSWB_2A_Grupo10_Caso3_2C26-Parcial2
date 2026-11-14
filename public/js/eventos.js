@@ -134,7 +134,7 @@ document
 cargarEventos();
 
 // ---- Tiempo real (WebSockets) ----
-const socket = io();
+const socket = io({ transports: ["websocket"] });
 
 // Muestra un cartelito temporal en pantalla
 function mostrarAviso(texto) {
